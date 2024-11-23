@@ -1,14 +1,14 @@
-import './App.css'
+import Signup from "./components/Signup";
+import Login from "./components/login";
 
 function App() {
-
   return (
     <>
-    <h1 className="text-5xl font-bold underline">
-      Hello world!
-    </h1>
+      <button>Click me</button>
+      <Signup />
+      <Login />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
