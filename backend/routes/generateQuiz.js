@@ -7,11 +7,15 @@ Generate an aptitude quiz with 10 questions. Each question should have:
 - A question text.
 - 4 options labeled A, B, C, and D.
 - The correct answer.
+- Questions on aptitude including logical reasoning, problem solving, and critical thinking.
 Return the quiz as an array of objects in JSON format, where each object contains:
 {
-  "question": "Question text",
-  "options": { "A": "Option A", "B": "Option B", "C": "Option C", "D": "Option D" },
-  "answer": "A" // or B, C, D
+  "que": "Question text",
+  "a": "option A",
+  "b": "option B",
+  "c": "option C",
+  "d": "option D",
+  "ans": "correct answer option (like a,b,c,d)"
 }
 `;
 

@@ -3,7 +3,7 @@ const router = express.Router();
 const Quiz = require("../models/quizModel");
 
 router.post("/addQuiz", async (req, res) => {
-  const { userId, jobRole, que, image, a, b, c, d, ans } = req.body;
+  const { userId, jobRole, que, a, b, c, d, ans } = req.body;
 
   try {
     // Create a new quiz document directly
@@ -11,7 +11,6 @@ router.post("/addQuiz", async (req, res) => {
       user: userId,
       jobRole,
       que,
-      image,
       a,
       b,
       c,
