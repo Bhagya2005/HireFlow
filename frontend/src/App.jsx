@@ -1,10 +1,13 @@
+import Navbar from "./components/Navbar";
 import Signup from "./components/Signup";
 import Login from "./components/login";
+import MainPage from "./pages/MainPage";
 
 function App() {
   return (
     <>
-      <button>Click me</button>
+      <Navbar />
+      <MainPage />
       <Signup />
       <Login />
     </>

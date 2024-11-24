@@ -26,17 +26,18 @@ const User = require("./models/userModel");
 
 const signup = require("./routes/signup");
 const login = require("./routes/login");
+const addQuiz = require("./routes/addQuiz");
+const getQuiz = require("./routes/getQuiz");
 
 app.use(signup);
 app.use(login);
+app.use(addQuiz);
+app.use(getQuiz);
 
 app.get("/", async (req, res) => {
   const users = await User.find();
   res.json(users);
 });
-
-app.post("/signup", signup);
-app.post("/login", login);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
