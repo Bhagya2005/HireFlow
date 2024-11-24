@@ -1,10 +1,11 @@
 import { User, Mail, Lock } from "lucide-react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Button from "./Button";
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,19 +14,28 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = { name, email, password };
+    console.log(name, email, password);
+
     try {
       const response = await axios.post(`${BACKEND_URL}/signup`, formData);
+
+      // Handle success
       if (response.status === 200) {
-        alert("Successfully signed up!");
-        console.log("Successfull signup");
+        console.log("Successfully signed up");
+
+        // Store the returned id and other data in localStorage
         localStorage.setItem("email", email);
+        localStorage.setItem("userId", response.data.id);
         localStorage.setItem("name", name);
+
+        // Clear the form fields
         setName("");
         setEmail("");
         setPassword("");
+        navigate("/");
       }
     } catch (error) {
-      console.error("Signup failed", error);
+      console.log("Signup failed", error);
       alert("Error: Unable to sign up!");
     }
   };
@@ -109,7 +119,7 @@ const Signup = () => {
 
               {/* Submit Button */}
               <Button
-                onclick={handleSubmit}
+                onClick={handleSubmit}
                 type="submit"
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
               >

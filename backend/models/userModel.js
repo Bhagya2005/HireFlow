@@ -16,6 +16,16 @@ const userSchema = new mongoose.Schema({
   companyName: {
     type: String,
   },
+  date: {
+    type: Date,
+    default: Date,
+  },
+  startTime: {
+    type: Date,
+  },
+  endTime: {
+    type: Date,
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);

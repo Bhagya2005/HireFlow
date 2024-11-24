@@ -5,7 +5,6 @@ const eachQuizSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
-  jobRole: { type: String, required: true },
   que: { type: String, required: true },
   a: { type: String, required: true },
   b: { type: String, required: true },
@@ -14,7 +13,6 @@ const eachQuizSchema = new mongoose.Schema({
   ans: { type: String, required: true },
 });
 
-// Array directly at the top level
 const quizSchema = new mongoose.Schema([eachQuizSchema]);
 
 module.exports = mongoose.model("Quiz", quizSchema);

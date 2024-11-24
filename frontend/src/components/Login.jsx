@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { User, Lock } from "lucide-react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "./Button";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -15,9 +16,9 @@ const Login = () => {
     try {
       const response = await axios.post(`${BACKEND_URL}/login`, formData);
       if (response.status === 200) {
-        alert("Successfully logged in!");
         console.log("Successfull login : ", response);
         localStorage.setItem("email", response.data.user.email);
+        localStorage.setItem("userId", response.data.user._id);
         localStorage.setItem("name", response.data.user.name);
         console.log(
           "Successfull data : ",
@@ -25,6 +26,7 @@ const Login = () => {
         );
         setEmail("");
         setPassword("");
+        navigate("/");
       }
     } catch (error) {
       console.error("Login failed", error);
@@ -91,7 +93,7 @@ const Login = () => {
 
               {/* Submit Button */}
               <Button
-                onclick={handleSubmit}
+                onClick={handleSubmit}
                 type="submit"
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
               >
