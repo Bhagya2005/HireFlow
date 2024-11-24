@@ -1,8 +1,11 @@
 import React from "react";
+import Navbar from "../components/Navbar";
 // import { ArrowRight } from "lucide-react";
 
 const MainPage = () => {
   return (
+    <>
+    <Navbar/>
     <div className="bg-gradient-to-b from-white to-blue-50 min-h-[80vh]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
         <div className="text-center space-y-8">
@@ -46,6 +49,8 @@ const MainPage = () => {
         </div>
       </div>
     </div>
+    </>
+
   );
 };
 

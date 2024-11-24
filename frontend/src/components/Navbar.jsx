@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   return (
@@ -14,10 +15,14 @@ const Navbar = () => {
 
           {/* Right side buttons */}
           <div className="flex items-center space-x-4">
-            <button className="font-medium">Login</button>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
-              Sign Up
-            </button>
+            <Link to={"/login"}>
+              <button className="font-medium">Login</button>
+            </Link>
+            <Link to={"/signup"}>
+              <button className="px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium">
+                Sign Up
+              </button>
+            </Link>
           </div>
         </div>
       </div>
