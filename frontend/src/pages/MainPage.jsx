@@ -1,9 +1,27 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 // import { ArrowRight } from "lucide-react";
 
 const MainPage = () => {
+  const [isEmail, setisEmail] = useState("")
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const email = localStorage.getItem("email");
+    if (email) {
+      setisEmail(email);
+    }
+  }, [isEmail])
+
+  const handleButtonClick = () => {
+    if(isEmail) {
+      navigate("/recruiter");
+    } else {
+      navigate("/signup");
+    }
+  }
+
   return (
     <>
       <Navbar />
@@ -26,12 +44,10 @@ const MainPage = () => {
 
             {/* CTA button */}
             <div className="mt-10">
-              <Link to={"/recruiter"}>
-                <button className="group bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded-full transition-all duration-200 transform hover:scale-105">
+                <button onClick={handleButtonClick} className="group bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded-full transition-all duration-200 transform hover:scale-105">
                   Create a Smart Recruit
                   {/* <ArrowRight className="ml-2 h-5 w-5 inline-block group-hover:translate-x-1 transition-transform" /> */}
                 </button>
-              </Link>
             </div>
 
             {/* Optional Stats or Social Proof */}

@@ -1,49 +1,39 @@
-import React, { useState } from "react";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker, TimePicker } from "@mui/x-date-pickers";
-import { TextField, Button, Box } from "@mui/material";
-import dayjs from "dayjs";
 import axios from "axios";
+import { useState } from "react";
+import dayjs from "dayjs";
 
-const InterviewScheduler = () => {
+const RecruiterInfo = () => {
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [date, setDate] = useState(null);
   const [name, setName] = useState(localStorage.getItem("name") || "");
   const [email, setEmail] = useState(localStorage.getItem("email") || "");
+  const [jobrole, setjobRole] = useState(localStorage.getItem("jobRole") || "");
   const [companyName, setCompanyName] = useState(
     localStorage.getItem("companyName") || ""
   );
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-  const handleSubmit = async () => {
-    if (!startTime || !endTime || !date) {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!startTime || !endTime || !date || !name || !email || !companyName || !jobrole) {
       alert("Please select both start and end times.");
       return;
     }
-
-    // Check if endTime is after startTime
-    if (dayjs(endTime).isBefore(startTime)) {
-      alert("End time must be after start time");
-      return;
-    }
-
-    console.log(
-      dayjs(startTime).format("hh:mm A"),
-      dayjs(endTime).format("hh:mm A"),
-      dayjs(date).format("YYYY-MM-DD")
-    );
 
     const data = {
       userId: localStorage.getItem("userId"),
       name,
       email,
       companyName,
-      date: dayjs(date).toDate(), // Send as Date object
-      startTime: dayjs(startTime, "hh:mm:A").toDate(), // Convert to Date object
-      endTime: dayjs(endTime, "hh:mm:A").toDate(), // Convert to Date object
+      jobrole,
+      date: dayjs(date).format("DD MMM YYYY"), // Format date as "DD MMM YYYY"
+      startTime: startTime ? dayjs(`${date}T${startTime}`).format("HH:mm") : null, // Format startTime as "HH:mm"
+      endTime: endTime ? dayjs(`${date}T${endTime}`).format("HH:mm") : null, // Format endTime as "HH:mm"
     };
+
+    console.log(data);
+    
 
     try {
       const response = await axios.post(`${BACKEND_URL}/updateUser`, data, {
@@ -51,7 +41,23 @@ const InterviewScheduler = () => {
       });
 
       if (response.status === 200) {
+        console.log("response: ",response);
+        
         alert("Interview time scheduled successfully!");
+        localStorage.setItem("companyName",companyName);
+        localStorage.setItem("jobRole", jobrole);
+        localStorage.setItem("startTime", startTime);
+        localStorage.setItem("endTime", endTime);
+        localStorage.setItem("date", date);
+
+        setName("");
+        setEmail("");
+        setCompanyName("");
+        setjobRole("");
+        setStartTime(null);
+        setEndTime(null);
+        setDate(null);
+        
       } else {
         alert("Failed to schedule interview time");
       }
@@ -62,51 +68,148 @@ const InterviewScheduler = () => {
   };
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Box
-        display="flex"
-        style={{ marginTop: "2rem" }}
-        flexDirection="column"
-        alignItems="center"
-        gap={2}
-      >
-        <TextField
-          label="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <TextField
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <TextField
-          label="Company Name"
-          value={companyName}
-          onChange={(e) => setCompanyName(e.target.value)}
-        />
-        <DatePicker
-          label="Date"
-          value={date}
-          onChange={(newValue) => setDate(newValue)}
-        />
-        <TimePicker
-          label="Start Time"
-          value={startTime}
-          onChange={(newValue) => setStartTime(newValue)}
-        />
-        <TimePicker
-          label="End Time"
-          value={endTime}
-          onChange={(newValue) => setEndTime(newValue)}
-        />
-        <Button variant="contained" onClick={handleSubmit}>
-          Schedule Interview
-        </Button>
-      </Box>
-    </LocalizationProvider>
+    <div className="flex justify-center items-center">
+      <div className="min-h-screen p-6">
+        <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Recruiter Information
+        </h2>
+        <p className="text-sm text-gray-600 mb-6">
+          Please add your recruiting details below
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4 max-w-3xl mx-auto">
+          {" "}
+          {/* Updated max width */}
+          <div className="space-y-2">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              placeholder="Enter your full name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-2 text-sm border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="space-y-2">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-2 text-sm border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="space-y-2">
+            <label
+              htmlFor="companyName"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Company Name
+            </label>
+            <input
+              id="companyName"
+              name="companyName"
+              type="text"
+              placeholder="Enter your company name"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              className="w-full px-4 py-2 text-sm border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="space-y-2">
+            <label
+              htmlFor="companyName"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Job Role (for what position you are recruiting)
+            </label>
+            <input
+              id="companyName"
+              name="companyName"
+              type="text"
+              placeholder="Enter your company name"
+              value={jobrole}
+              onChange={(e) => setjobRole(e.target.value)}
+              className="w-full px-4 py-2 text-sm border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="space-y-2">
+            <label
+              htmlFor="date"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Date
+            </label>
+            <input
+              id="date"
+              name="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full px-4 py-2 text-sm border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="startTime"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Start Time
+              </label>
+              <input
+                id="startTime"
+                name="startTime"
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full px-4 py-2 text-sm border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="endTime"
+                className="block text-sm font-medium text-gray-700"
+              >
+                End Time
+              </label>
+              <input
+                id="endTime"
+                name="endTime"
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="w-full px-4 py-2 text-sm border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <button
+            onClick={handleSubmit}
+            type="submit"
+            className="w-full py-3 px-4 text-sm text-white font-medium bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+          >
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
   );
 };
 
-export default InterviewScheduler;
+export default RecruiterInfo;
