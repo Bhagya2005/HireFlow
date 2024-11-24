@@ -1,7 +1,7 @@
-import React, { useState } from "react";
 import { User, Mail, Lock, ArrowRight } from "lucide-react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const Signup = () => {
   const [name, setName] = useState("");
