@@ -28,11 +28,13 @@ const signup = require("./routes/signup");
 const login = require("./routes/login");
 const addQuiz = require("./routes/addQuiz");
 const getQuiz = require("./routes/getQuiz");
+const generateQuiz = require("./routes/generateQuiz");
 
 app.use(signup);
 app.use(login);
 app.use(addQuiz);
 app.use(getQuiz);
+app.use(generateQuiz);
 
 app.get("/", async (req, res) => {
   const users = await User.find();
