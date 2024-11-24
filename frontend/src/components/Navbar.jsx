@@ -1,5 +1,6 @@
-import React from "react";
 import { Link } from "react-router-dom";
+import Button from "./Button";
+import React from "react";
 
 const Navbar = () => {
   return (
@@ -19,9 +20,12 @@ const Navbar = () => {
               <button className="font-medium">Login</button>
             </Link>
             <Link to={"/signup"}>
-              <button className="px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium">
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+              >
                 Sign Up
-              </button>
+              </Button>
             </Link>
           </div>
         </div>

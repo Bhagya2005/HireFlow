@@ -1,7 +1,8 @@
-import { User, Lock, ArrowRight } from "lucide-react";
+import { useState } from "react";
+import { User, Lock } from "lucide-react";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import Button from "./Button";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,10 +16,13 @@ const Login = () => {
       const response = await axios.post(`${BACKEND_URL}/login`, formData);
       if (response.status === 200) {
         alert("Successfully logged in!");
-        console.log("Successfull login : ", response)
+        console.log("Successfull login : ", response);
         localStorage.setItem("email", response.data.user.email);
         localStorage.setItem("name", response.data.user.name);
-        console.log("Successfull data : ", response.data.user.email + response.data.user.name)
+        console.log(
+          "Successfull data : ",
+          response.data.user.email + response.data.user.name
+        );
         setEmail("");
         setPassword("");
       }
@@ -86,14 +90,13 @@ const Login = () => {
               </div>
 
               {/* Submit Button */}
-              <button
-                onClick={handleSubmit}
+              <Button
+                onclick={handleSubmit}
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
               >
                 Sign In
-                <ArrowRight className="h-4 w-4" />
-              </button>
+              </Button>
             </form>
 
             {/* Footer Text */}

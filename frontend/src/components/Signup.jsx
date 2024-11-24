@@ -1,7 +1,8 @@
-import { User, Mail, Lock, ArrowRight } from "lucide-react";
+import { User, Mail, Lock } from "lucide-react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import Button from "./Button";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -16,7 +17,7 @@ const Signup = () => {
       const response = await axios.post(`${BACKEND_URL}/signup`, formData);
       if (response.status === 200) {
         alert("Successfully signed up!");
-        console.log("Successfull signup")
+        console.log("Successfull signup");
         localStorage.setItem("email", email);
         localStorage.setItem("name", name);
         setName("");
@@ -107,14 +108,13 @@ const Signup = () => {
               </div>
 
               {/* Submit Button */}
-              <button
-                onClick={handleSubmit}
+              <Button
+                onclick={handleSubmit}
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
               >
                 Create Account
-                <ArrowRight className="h-4 w-4" />
-              </button>
+              </Button>
             </form>
 
             {/* Footer Text */}
