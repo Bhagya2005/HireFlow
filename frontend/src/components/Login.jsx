@@ -15,9 +15,10 @@ const Login = () => {
       const response = await axios.post(`${BACKEND_URL}/login`, formData);
       if (response.status === 200) {
         alert("Successfully logged in!");
-        console.log("Successfull login");
-
-        
+        console.log("Successfull login : ", response)
+        localStorage.setItem("email", response.data.user.email);
+        localStorage.setItem("name", response.data.user.name);
+        console.log("Successfull data : ", response.data.user.email + response.data.user.name)
         setEmail("");
         setPassword("");
       }
