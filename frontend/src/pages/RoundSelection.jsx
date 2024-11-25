@@ -29,11 +29,11 @@ const RoundSelection = () => {
     }
 
     if (selectedRounds.aptitude === true) {
-      navigate("/generateApti");
+      navigate("/aptitudeInfo");
     } else if (selectedRounds.technical === true) {
-      navigate("/generateTech");
+      navigate("/technicalInfo");
     } else if (selectedRounds.hrRound === true) {
-      //navigate to hr round
+      navigate("/hrroundInfo");
     } else {
       alert("Please select at least one round.");
     }
