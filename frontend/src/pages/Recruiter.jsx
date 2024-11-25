@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
 
 const RecruiterInfo = () => {
   const [startTime, setStartTime] = useState(null);
@@ -13,6 +14,7 @@ const RecruiterInfo = () => {
     localStorage.getItem("companyName") || ""
   );
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,6 +59,8 @@ const RecruiterInfo = () => {
         setStartTime(null);
         setEndTime(null);
         setDate(null);
+
+        navigate("/candidateUpload")
         
       } else {
         alert("Failed to schedule interview time");
