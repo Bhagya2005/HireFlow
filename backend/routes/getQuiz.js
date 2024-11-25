@@ -16,7 +16,12 @@ router.get("/getQuiz", async (req, res) => {
       quizzes = await Quiz.find();
     }
 
-    res.status(200).json(quizzes);
+    const modifiedQuizzes = quizzes.map((quiz) => {
+      quiz.id = quiz._id;
+      return quiz;
+    });
+
+    res.status(200).json(modifiedQuizzes);
   } catch (err) {
     console.error(err);
     res.status(500).send("Something went wrong from backend");

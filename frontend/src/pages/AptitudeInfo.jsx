@@ -1,35 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-
-const preGeneratedQuizzes = [
-  {
-    id: 1,
-    question: "What is the capital of France?",
-    a: "London",
-    b: "Berlin",
-    c: "Paris",
-    d: "Madrid",
-    ans: "c",
-  },
-  {
-    id: 2,
-    question: "Which planet is known as the Red Planet?",
-    a: "Jupiter",
-    b: "Mars",
-    c: "Venus",
-    d: "Saturn",
-    ans: "b",
-  },
-  {
-    id: 3,
-    question: "What is 2 + 2?",
-    a: "3",
-    b: "4",
-    c: "5",
-    d: "6",
-    ans: "b",
-  },
-];
+import axios from "axios";
 
 const AptitudeInfo = () => {
   const navigate = useNavigate();
@@ -37,6 +8,9 @@ const AptitudeInfo = () => {
   const [showManualForm, setShowManualForm] = useState(false);
   const [selectedQuizzes, setSelectedQuizzes] = useState([]);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [preGeneratedQuizzes, setPreGeneratedQuizzes] = useState();
+  const [loader, setLoader] = useState(false);
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const [newQuiz, setNewQuiz] = useState({
     question: "",
     a: "",
@@ -46,12 +20,44 @@ const AptitudeInfo = () => {
     ans: "",
   });
 
+  function generateQuiz() {
+    setLoader(true);
+    axios
+      .get(`${BACKEND_URL}/generateQuiz`)
+      .then((response) => {
+        console.log(response.data);
+        setPreGeneratedQuizzes(response.data);
+        setLoader(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching quizzes:", error);
+        setLoader(false);
+      });
+  }
+
+  function getAlreadyGeneratedQuiz() {
+    setLoader(true);
+    axios
+      .get(`${BACKEND_URL}/getQuiz`)
+      .then((response) => {
+        console.log(response.data);
+        setPreGeneratedQuizzes(response.data);
+        setLoader(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching quizzes:", error);
+        setLoader(false);
+      });
+  }
+
   const handlePreGeneratedSelect = (quiz) => {
-    if (selectedQuizzes.find((q) => q.id === quiz.id)) {
-      setSelectedQuizzes(selectedQuizzes.filter((q) => q.id !== quiz.id));
-    } else {
-      setSelectedQuizzes([...selectedQuizzes, quiz]);
-    }
+    setSelectedQuizzes((prevSelectedQuizzes) => {
+      if (prevSelectedQuizzes.find((q) => q.id === quiz.id)) {
+        return prevSelectedQuizzes.filter((q) => q.id !== quiz.id);
+      } else {
+        return [...prevSelectedQuizzes, quiz];
+      }
+    });
   };
 
   const handleManualQuizSubmit = (e) => {
@@ -62,6 +68,7 @@ const AptitudeInfo = () => {
     };
     setSelectedQuizzes([...selectedQuizzes, newQuizWithId]);
     setNewQuiz({
+      id: Date.now(),
       question: "",
       a: "",
       b: "",
@@ -84,6 +91,7 @@ const AptitudeInfo = () => {
             onClick={() => {
               setShowPreGenerated(!showPreGenerated);
               setShowManualForm(false);
+              generateQuiz();
             }}
             className={`py-4 px-8 rounded-lg transition-all text-lg font-semibold ${
               showPreGenerated
@@ -91,12 +99,27 @@ const AptitudeInfo = () => {
                 : "bg-blue-500 text-white hover:bg-blue-600"
             }`}
           >
-            View Already Generated Questions
+            Generated New Questions
+          </button>
+          <button
+            onClick={() => {
+              setShowPreGenerated(!showPreGenerated);
+              setShowManualForm(false);
+              getAlreadyGeneratedQuiz();
+            }}
+            className={`py-4 px-8 rounded-lg transition-all text-lg font-semibold ${
+              showPreGenerated
+                ? "bg-blue-600 text-white"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
+          >
+            View Already Generated Questions Use by other Recruiter
           </button>
           <button
             onClick={() => {
               setShowManualForm(!showManualForm);
               setShowPreGenerated(false);
+              generateQuiz();
             }}
             className={`py-4 px-8 rounded-lg transition-all text-lg font-semibold ${
               showManualForm
@@ -108,18 +131,6 @@ const AptitudeInfo = () => {
           </button>
         </div>
 
-        {/* Selected Questions Count */}
-        {selectedQuizzes.length > 0 && (
-          <div className="flex justify-center mb-8">
-            <button
-              onClick={() => setShowReviewModal(true)}
-              className="bg-indigo-500 text-white py-2 px-6 rounded-lg hover:bg-indigo-600 transition-all"
-            >
-              Review Selected Questions ({selectedQuizzes.length})
-            </button>
-          </div>
-        )}
-
         {/* Content Area */}
         <div className="space-y-8">
           {/* Pre-generated Questions Section */}
@@ -130,7 +141,8 @@ const AptitudeInfo = () => {
               </h2>
               <div className="h-[60vh] overflow-y-auto">
                 <div className="space-y-4">
-                  {preGeneratedQuizzes.map((quiz) => (
+                  {loader && <div className="loader">Generating Quiz...</div>}
+                  {preGeneratedQuizzes?.map((quiz, i) => (
                     <div
                       key={quiz.id}
                       className={`p-4 border rounded-lg cursor-pointer transition-all ${
@@ -140,9 +152,7 @@ const AptitudeInfo = () => {
                       }`}
                       onClick={() => handlePreGeneratedSelect(quiz)}
                     >
-                      <p className="font-medium text-gray-800">
-                        {quiz.question}
-                      </p>
+                      <p className="font-medium text-gray-800">{quiz.que}</p>
                       <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
                         <div className="text-gray-600">A: {quiz.a}</div>
                         <div className="text-gray-600">B: {quiz.b}</div>
@@ -172,7 +182,7 @@ const AptitudeInfo = () => {
                   </label>
                   <input
                     type="text"
-                    value={newQuiz.question}
+                    value={newQuiz.que}
                     onChange={(e) =>
                       setNewQuiz({ ...newQuiz, question: e.target.value })
                     }
@@ -268,6 +278,18 @@ const AptitudeInfo = () => {
           )}
         </div>
 
+        {/* Selected Questions Count */}
+        {selectedQuizzes.length > 0 && (
+          <div className="flex justify-center mt-10 mb-8">
+            <button
+              onClick={() => setShowReviewModal(true)}
+              className="bg-indigo-500 text-white py-2 px-6 rounded-lg hover:bg-indigo-600 transition-all"
+            >
+              Review Selected Questions ({selectedQuizzes.length})
+            </button>
+          </div>
+        )}
+
         <button
           onClick={() => {
             navigate("/technicalInfo");
@@ -309,7 +331,7 @@ const AptitudeInfo = () => {
                         className="p-4 border rounded-lg bg-gray-50"
                       >
                         <div className="font-semibold text-gray-700 mb-2">
-                          Question {index + 1}: {quiz.question}
+                          Question {index + 1}: {quiz.que}
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div className="text-gray-600">A: {quiz.a}</div>

@@ -10,6 +10,7 @@ Generate an aptitude quiz with 10 questions. Each question should have:
 - Questions on aptitude including logical reasoning, problem solving, and critical thinking.
 Return the quiz as an array of objects in JSON format, where each object contains:
 {
+  "id": "a very unique id (not serializable)",
   "que": "Question text",
   "a": "option A",
   "b": "option B",
@@ -28,16 +29,10 @@ router.get("/generateQuiz", async (req, res) => {
     const result = await model.generateContent(addOnPrompt);
     const rawResponse = await result.response.text(); // Get the raw response text
 
-    // Remove potential extra characters (like backticks or spaces)
     const cleanedResponse = rawResponse.slice(7, -4).trim();
-
-    // Log cleaned response
-    console.log("Cleaned Response:", cleanedResponse);
-
-    // Parse JSON
     const responseText = JSON.parse(cleanedResponse);
 
-    console.log("Parsed Response:", responseText);
+    console.log("ResponseText:", responseText);
     res.status(200).json(responseText); // Send the parsed JSON to the frontend
   } catch (error) {
     console.error("Error generating quiz:", error);
