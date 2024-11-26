@@ -78,6 +78,18 @@ const AptitudeInfo = () => {
     });
   };
 
+
+  const handleClickNextRound = () => {
+    const isTechnical = localStorage.getItem("technical");
+    const isHr = localStorage.getItem("hrRound");
+    if(isTechnical === "true") {
+      navigate("/technicalInfo");
+    } else if(isHr === "true") {
+      navigate("/hrInfo");
+    } else {
+      navigate("/dashboard");
+    }
+  }
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
@@ -178,7 +190,7 @@ const AptitudeInfo = () => {
               <form onSubmit={handleManualQuizSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Question
+                    Problem Title
                   </label>
                   <input
                     type="text"
@@ -291,9 +303,7 @@ const AptitudeInfo = () => {
         )}
 
         <button
-          onClick={() => {
-            navigate("/technicalInfo");
-          }}
+          onClick={handleClickNextRound}
           className={`  py-3  px-8 mt-6 w-full rounded-lg transition-all text-lg font-semibold ${
             showPreGenerated
               ? "bg-blue-600 text-white"

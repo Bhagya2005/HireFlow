@@ -7,6 +7,8 @@ import Recruiter from "./pages/Recruiter";
 import CandidateUpload from "./pages/CandidateUpload";
 import RoundSelection from "./pages/RoundSelection";
 import AptitudeInfo from "./pages/AptitudeInfo";
+import TechnicalInfo from "./pages/TechnicalInfo";
+import HrInfo from "./pages/HrInfo";
 const App = () => {
   return (
     <Router>
@@ -14,6 +16,8 @@ const App = () => {
         <Route path="/" element={<MainPage />} />
         <Route path="/recruiter" element={<Recruiter />} />
         <Route path="/aptitudeInfo" element={<AptitudeInfo />} />
+        <Route path="/technicalInfo" element={<TechnicalInfo />} />
+        <Route path="/hrInfo" element={<HrInfo />} />
         <Route path="/candidateUpload" element={<CandidateUpload />} />
         <Route path="/roundSelection" element={<RoundSelection />} />
         <Route path="/login" element={<Login />} />

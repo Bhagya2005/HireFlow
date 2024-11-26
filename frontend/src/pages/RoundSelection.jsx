@@ -8,6 +8,12 @@ const RoundSelection = () => {
     hrRound: false,
   });
 
+  const [roundDurations, setRoundDurations] = useState({
+    aptitude: "",
+    technical: "",
+    hrRound: "",
+  });
+
   const navigate = useNavigate();
 
   const handleRoundChange = (round) => {
@@ -15,25 +21,42 @@ const RoundSelection = () => {
       ...prev,
       [round]: !prev[round],
     }));
+    // Clear duration when deselecting a round
+    if (selectedRounds[round]) {
+      setRoundDurations((prev) => ({
+        ...prev,
+        [round]: "",
+      }));
+    }
+  };
+
+  const handleDurationChange = (round, value) => {
+    setRoundDurations((prev) => ({
+      ...prev,
+      [round]: value,
+    }));
   };
 
   const handleSubmit = () => {
     if (selectedRounds.aptitude === true) {
       localStorage.setItem("aptitude", true);
+      localStorage.setItem("aptitudeDuration", roundDurations.aptitude || "0");
     }
     if (selectedRounds.technical === true) {
       localStorage.setItem("technical", true);
+      localStorage.setItem("technicalDuration", roundDurations.technical || "0");
     }
     if (selectedRounds.hrRound === true) {
       localStorage.setItem("hrRound", true);
+      localStorage.setItem("hrRoundDuration", roundDurations.hrRound || "0");
     }
 
     if (selectedRounds.aptitude === true) {
       navigate("/aptitudeInfo");
     } else if (selectedRounds.technical === true) {
-      navigate("/technicalInfo");
+      navigate("/generateTech");
     } else if (selectedRounds.hrRound === true) {
-      navigate("/hrroundInfo");
+      // Navigate to HR round page
     } else {
       alert("Please select at least one round.");
     }
@@ -47,14 +70,13 @@ const RoundSelection = () => {
         </h2>
         <p className="text-lg text-gray-600 mb-8">
           Choose which interview rounds you'd like to conduct for the
-          recruitment process. Select the appropriate rounds to streamline your
-          hiring workflow.
+          recruitment process. Specify the duration for each round as well.
         </p>
 
         <div className="space-y-6 bg-white p-8 rounded-lg border-2 border-gray-200">
           {/* Aptitude Round */}
-          <div className="flex items-center space-x-4">
-            <div className="relative">
+          <div className="space-y-2">
+            <div className="flex items-center space-x-4">
               <input
                 type="checkbox"
                 id="aptitude"
@@ -62,23 +84,38 @@ const RoundSelection = () => {
                 onChange={() => handleRoundChange("aptitude")}
                 className="w-5 h-5 border-2 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
               />
-            </div>
-            <div>
               <label
                 htmlFor="aptitude"
                 className="text-xl font-medium text-gray-800 cursor-pointer"
               >
                 Aptitude/Reasoning Round
               </label>
-              <p className="text-gray-500 text-sm mt-1">
-                Basic logical, analytical, and problem-solving skills assessment
-              </p>
             </div>
+            {selectedRounds.aptitude && (
+              <div className="ml-8">
+                <label
+                  htmlFor="aptitudeTime"
+                  className="block text-gray-600 text-sm font-medium"
+                >
+                  Duration (in minutes):
+                </label>
+                <input
+                  type="number"
+                  id="aptitudeTime"
+                  min="1"
+                  value={roundDurations.aptitude}
+                  onChange={(e) =>
+                    handleDurationChange("aptitude", e.target.value)
+                  }
+                  className="mt-1 bg-gray-200 p-2 border rounded-md w-24"
+                />
+              </div>
+            )}
           </div>
 
           {/* Technical Round */}
-          <div className="flex items-center space-x-4">
-            <div className="relative">
+          <div className="space-y-2">
+            <div className="flex items-center space-x-4">
               <input
                 type="checkbox"
                 id="technical"
@@ -86,23 +123,38 @@ const RoundSelection = () => {
                 onChange={() => handleRoundChange("technical")}
                 className="w-5 h-5 border-2 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
               />
-            </div>
-            <div>
               <label
                 htmlFor="technical"
                 className="text-xl font-medium text-gray-800 cursor-pointer"
               >
                 Technical Round
               </label>
-              <p className="text-gray-500 text-sm mt-1">
-                In-depth technical knowledge and practical skills evaluation
-              </p>
             </div>
+            {selectedRounds.technical && (
+              <div className="ml-8">
+                <label
+                  htmlFor="technicalTime"
+                  className="block text-gray-600 text-sm font-medium"
+                >
+                  Duration (in minutes):
+                </label>
+                <input
+                  type="number"
+                  id="technicalTime"
+                  min="1"
+                  value={roundDurations.technical}
+                  onChange={(e) =>
+                    handleDurationChange("technical", e.target.value)
+                  }
+                  className="mt-1 p-2 bg-gray-200 border rounded-md w-24"
+                />
+              </div>
+            )}
           </div>
 
           {/* HR Round */}
-          <div className="flex items-center space-x-4">
-            <div className="relative">
+          <div className="space-y-2">
+            <div className="flex items-center space-x-4">
               <input
                 type="checkbox"
                 id="hrRound"
@@ -110,18 +162,33 @@ const RoundSelection = () => {
                 onChange={() => handleRoundChange("hrRound")}
                 className="w-5 h-5 border-2 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
               />
-            </div>
-            <div>
               <label
                 htmlFor="hrRound"
                 className="text-xl font-medium text-gray-800 cursor-pointer"
               >
                 HR Round/Final Interview
               </label>
-              <p className="text-gray-500 text-sm mt-1">
-                Culture fit assessment and final discussion
-              </p>
             </div>
+            {selectedRounds.hrRound && (
+              <div className="ml-8">
+                <label
+                  htmlFor="hrTime"
+                  className="block text-gray-600 text-sm font-medium"
+                >
+                  Duration (in minutes):
+                </label>
+                <input
+                  type="number"
+                  id="hrTime"
+                  min="1"
+                  value={roundDurations.hrRound}
+                  onChange={(e) =>
+                    handleDurationChange("hrRound", e.target.value)
+                  }
+                  className="mt-1 bg-gray-200 p-2 border rounded-md w-24"
+                />
+              </div>
+            )}
           </div>
         </div>
 
