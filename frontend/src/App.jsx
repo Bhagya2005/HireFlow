@@ -9,6 +9,8 @@ import AptitudeInfo from "./pages/AptitudeInfo";
 import TechnicalInfo from "./pages/TechnicalInfo";
 import HRRoundInfo from "./pages/HrRoundInfo";
 import TechRound from "./pages/TechRound";
+import QuizComponent from "./pages/quizRound";
+import RecruitmentDashboard from "./pages/Dashboard";
 const App = () => {
   return (
     <Router>
@@ -20,6 +22,8 @@ const App = () => {
         <Route path="/hrInfo" element={<HRRoundInfo />} />
         <Route path="/candidateUpload" element={<CandidateUpload />} />
         <Route path="/roundSelection" element={<RoundSelection />} />
+        <Route path="/quizRound" element={<QuizComponent />} />
+        <Route path="/dashboard" element={<RecruitmentDashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/techRound" element={<TechRound />} />
@@ -28,5 +32,6 @@ const App = () => {
     </Router>
   );
 };
+
 
 export default App;
