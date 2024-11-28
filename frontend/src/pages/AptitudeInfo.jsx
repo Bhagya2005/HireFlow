@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import axios from "axios";
 
@@ -154,7 +154,7 @@ const AptitudeInfo = () => {
               <div className="h-[60vh] overflow-y-auto">
                 <div className="space-y-4">
                   {loader && <div className="loader">Generating Quiz...</div>}
-                  {preGeneratedQuizzes?.map((quiz, i) => (
+                  {preGeneratedQuizzes?.map((quiz) => (
                     <div
                       key={quiz.id}
                       className={`p-4 border rounded-lg cursor-pointer transition-all ${

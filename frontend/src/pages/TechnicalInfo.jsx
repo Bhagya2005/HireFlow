@@ -1,6 +1,6 @@
-import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import axios from "axios";
+import { useState } from "react";
 
 const TechnicalInfo = () => {
   const [showPreGenerated, setShowPreGenerated] = useState(false);
@@ -210,51 +210,6 @@ const TechnicalInfo = () => {
                   required
                 />
               </div>
-
-              {/* Input */}
-              <div>
-                <label className="block text-sm font-medium mb-1">Input</label>
-                <textarea
-                  value={newQuiz.input || ""}
-                  onChange={(e) =>
-                    setNewQuiz({ ...newQuiz, input: e.target.value })
-                  }
-                  className="w-full p-2 border rounded-md"
-                  rows="3"
-                  required
-                />
-              </div>
-
-              {/* Output */}
-              <div>
-                <label className="block text-sm font-medium mb-1">Output</label>
-                <textarea
-                  value={newQuiz.output || ""}
-                  onChange={(e) =>
-                    setNewQuiz({ ...newQuiz, output: e.target.value })
-                  }
-                  className="w-full p-2 border rounded-md"
-                  rows="3"
-                  required
-                />
-              </div>
-
-              {/* Constraints */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Constraints
-                </label>
-                <textarea
-                  value={newQuiz.constraints || ""}
-                  onChange={(e) =>
-                    setNewQuiz({ ...newQuiz, constraints: e.target.value })
-                  }
-                  className="w-full p-2 border rounded-md"
-                  rows="3"
-                  required
-                />
-              </div>
-
               {/* Submit Button */}
               <button
                 type="submit"

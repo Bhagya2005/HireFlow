@@ -44,7 +44,10 @@ const RoundSelection = () => {
     }
     if (selectedRounds.technical === true) {
       localStorage.setItem("technical", true);
-      localStorage.setItem("technicalDuration", roundDurations.technical || "0");
+      localStorage.setItem(
+        "technicalDuration",
+        roundDurations.technical || "0"
+      );
     }
     if (selectedRounds.hrRound === true) {
       localStorage.setItem("hrRound", true);
@@ -69,7 +72,7 @@ const RoundSelection = () => {
           Rounds Selection
         </h2>
         <p className="text-lg text-gray-600 mb-8">
-          Choose which interview rounds you'd like to conduct for the
+          Choose which interview rounds you would like to conduct for the
           recruitment process. Specify the duration for each round as well.
         </p>
 
