@@ -5,12 +5,11 @@ const Quiz = require("../models/quizModel");
 router.post("/addQuiz", async (req, res) => {
   const { userId, questions } = req.body; // Accepting questions as an array
 
-  console.log("Received userId and questions:", userId, questions);
-
   try {
     // Mapping the incoming questions to the appropriate format
     const quizzesToSave = questions.map((quiz) => ({
       user: null, // Optional: You can leave it empty or handle it accordingly
+      id: quiz.id,
       que: quiz.que,
       a: quiz.a,
       b: quiz.b,

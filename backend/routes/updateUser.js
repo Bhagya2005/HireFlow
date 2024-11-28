@@ -4,11 +4,16 @@ const User = require("../models/userModel");
 const dayjs = require("dayjs");
 
 router.post("/updateUser", async (req, res) => {
-  const { userId, date, startTime, endTime, name, companyName, email, jobrole } =
-    req.body;
-
-    console.log("backend data :  " + userId, date, startTime, endTime, name, companyName, email);
-    
+  const {
+    userId,
+    date,
+    startTime,
+    endTime,
+    name,
+    companyName,
+    email,
+    jobrole,
+  } = req.body;
 
   try {
     const user = await User.findById(userId);
@@ -21,7 +26,7 @@ router.post("/updateUser", async (req, res) => {
 
     if (name) user.name = name;
     if (companyName) user.companyName = companyName;
-    if(jobrole) user.jobRole = jobrole
+    if (jobrole) user.jobRole = jobrole;
 
     // Convert startTime and endTime to Date objects
     if (startTime) user.startTime = startTime; // Convert to Date

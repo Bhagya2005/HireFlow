@@ -1,18 +1,20 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
+import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const AptitudeInfo = () => {
+export default function AptitudeInfo() {
   const navigate = useNavigate();
   const [showPreGenerated, setShowPreGenerated] = useState(false);
   const [showManualForm, setShowManualForm] = useState(false);
+  const [showExistingQuestions, setShowExistingQuestions] = useState(false);
   const [selectedQuizzes, setSelectedQuizzes] = useState([]);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [preGeneratedQuizzes, setPreGeneratedQuizzes] = useState();
   const [loader, setLoader] = useState(false);
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+  const [preGeneratedQuizzes, setPreGeneratedQuizzes] = useState([]);
+  const [existingQuizzes, setExistingQuizzes] = useState([]);
   const [newQuiz, setNewQuiz] = useState({
-    question: "",
+    que: "",
     a: "",
     b: "",
     c: "",
@@ -20,43 +22,15 @@ const AptitudeInfo = () => {
     ans: "",
   });
 
-  function generateQuiz() {
-    setLoader(true);
-    axios
-      .get(`${BACKEND_URL}/generateQuiz`)
-      .then((response) => {
-        console.log(response.data);
-        setPreGeneratedQuizzes(response.data);
-        setLoader(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching quizzes:", error);
-        setLoader(false);
-      });
-  }
-
-  function getAlreadyGeneratedQuiz() {
-    setLoader(true);
-    axios
-      .get(`${BACKEND_URL}/getQuiz`)
-      .then((response) => {
-        console.log(response.data);
-        setPreGeneratedQuizzes(response.data);
-        setLoader(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching quizzes:", error);
-        setLoader(false);
-      });
-  }
+  // Replace with your actual backend URL
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handlePreGeneratedSelect = (quiz) => {
     setSelectedQuizzes((prevSelectedQuizzes) => {
-      if (prevSelectedQuizzes.find((q) => q.id === quiz.id)) {
-        return prevSelectedQuizzes.filter((q) => q.id !== quiz.id);
-      } else {
-        return [...prevSelectedQuizzes, quiz];
-      }
+      const quizIndex = prevSelectedQuizzes.findIndex((q) => q.id === quiz.id);
+      return quizIndex > -1
+        ? prevSelectedQuizzes.filter((q) => q.id !== quiz.id)
+        : [...prevSelectedQuizzes, quiz];
     });
   };
 
@@ -67,10 +41,7 @@ const AptitudeInfo = () => {
       id: Date.now(),
     };
     setSelectedQuizzes([...selectedQuizzes, newQuizWithId]);
-    console.log(newQuiz);
     setNewQuiz({
-      id: Date.now(),
-      question: "",
       que: "",
       a: "",
       b: "",
@@ -80,7 +51,54 @@ const AptitudeInfo = () => {
     });
   };
 
-  const handleClickNextRound = () => {
+  // const simulateLoading = () => {
+  //   setLoader(true);
+  //   setTimeout(() => setLoader(false), 1500);
+  // };
+
+  const handleExistingQuestionSelect = (quiz) => {
+    setSelectedQuizzes((prevSelectedQuizzes) => {
+      const quizIndex = prevSelectedQuizzes.findIndex((q) => q.id === quiz.id);
+      return quizIndex > -1
+        ? prevSelectedQuizzes.filter((q) => q.id !== quiz.id)
+        : [...prevSelectedQuizzes, quiz];
+    });
+  };
+
+  const generateQuiz = () => {
+    setLoader(true);
+    console.log("Generating....");
+    axios
+      .get(`${BACKEND_URL}/generateQuiz`)
+      .then((response) => {
+        console.log("Success");
+        console.log(response.data);
+        setPreGeneratedQuizzes(response.data);
+        setLoader(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching quizzes:", error);
+        setLoader(false);
+        console.log("Error in generating");
+      });
+  };
+
+  const getAlreadyGeneratedQuiz = () => {
+    setLoader(true);
+    axios
+      .get(`${BACKEND_URL}/getQuiz`)
+      .then((response) => {
+        console.log(response.data);
+        setExistingQuizzes(response.data);
+        setLoader(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching quizzes:", error);
+        setLoader(false);
+      });
+  };
+
+  function nextRound() {
     const isTechnical = localStorage.getItem("technical");
     const isHr = localStorage.getItem("hrRound");
     if (isTechnical === "true") {
@@ -101,239 +119,199 @@ const AptitudeInfo = () => {
     } catch (error) {
       console.error(error);
     }
-  };
-
+  }
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-8 text-gray-800 text-center">
-          Quiz Manager
+          Aptitude Question Addon
         </h1>
 
-        {/* Initial Buttons - Always Visible */}
         <div className="flex gap-4 justify-center mb-8">
           <button
             onClick={() => {
-              setShowPreGenerated(!showPreGenerated);
+              setShowPreGenerated(true);
               setShowManualForm(false);
+              setShowExistingQuestions(false);
               generateQuiz();
+              // simulateLoading();
             }}
-            className={`py-4 px-8 rounded-lg transition-all text-lg font-semibold ${
-              showPreGenerated
-                ? "bg-blue-600 text-white"
-                : "bg-blue-500 text-white hover:bg-blue-600"
-            }`}
+            className="py-4 px-8 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-all"
           >
             Generated New Questions
           </button>
           <button
             onClick={() => {
-              setShowPreGenerated(!showPreGenerated);
-              setShowManualForm(false);
-              getAlreadyGeneratedQuiz();
-            }}
-            className={`py-4 px-8 rounded-lg transition-all text-lg font-semibold ${
-              showPreGenerated
-                ? "bg-blue-600 text-white"
-                : "bg-blue-500 text-white hover:bg-blue-600"
-            }`}
-          >
-            View Already Generated Questions Use by other Recruiter
-          </button>
-          <button
-            onClick={() => {
-              setShowManualForm(!showManualForm);
+              setShowManualForm(true);
               setShowPreGenerated(false);
-              generateQuiz();
+              setShowExistingQuestions(false);
             }}
-            className={`py-4 px-8 rounded-lg transition-all text-lg font-semibold ${
-              showManualForm
-                ? "bg-green-600 text-white"
-                : "bg-green-500 text-white hover:bg-green-600"
-            }`}
+            className="py-4 px-8 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-all"
           >
             Create Questions Manually
           </button>
+          <button
+            onClick={() => {
+              setShowExistingQuestions(true);
+              setShowPreGenerated(false);
+              getAlreadyGeneratedQuiz();
+              setShowManualForm(false);
+              // simulateLoading();
+            }}
+            className="py-4 px-8 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-all"
+          >
+            View Existing Questions
+          </button>
         </div>
 
-        {/* Content Area */}
-        <div className="space-y-8">
-          {/* Pre-generated Questions Section */}
-          {showPreGenerated && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-700">
-                Pre-generated Questions
-              </h2>
-              <div className="h-[60vh] overflow-y-auto">
-                <div className="space-y-4">
-                  {loader && <div className="loader">Generating Quiz...</div>}
-                  {preGeneratedQuizzes?.map((quiz) => (
-                    <div
-                      key={quiz.id}
-                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                        selectedQuizzes.find((q) => q.id === quiz.id)
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-blue-300"
-                      }`}
-                      onClick={() => handlePreGeneratedSelect(quiz)}
-                    >
-                      <p className="font-medium text-gray-800">{quiz.que}</p>
-                      <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-                        <div className="text-gray-600">A: {quiz.a}</div>
-                        <div className="text-gray-600">B: {quiz.b}</div>
-                        <div className="text-gray-600">C: {quiz.c}</div>
-                        <div className="text-gray-600">D: {quiz.d}</div>
-                      </div>
-                      <div className="mt-2 text-sm text-gray-500">
-                        Answer: Option {quiz.ans.toUpperCase()}
-                      </div>
-                    </div>
-                  ))}
+        {loader && (
+          <div className="flex justify-center items-center my-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+          </div>
+        )}
+
+        {showPreGenerated && !loader && (
+          <div className="grid md:grid-cols-2 gap-4">
+            {preGeneratedQuizzes.map((quiz) => (
+              <div
+                key={quiz.id}
+                onClick={() => handlePreGeneratedSelect(quiz)}
+                className={`
+                  cursor-pointer p-4 border rounded-lg transition-all 
+                  ${
+                    selectedQuizzes.some((q) => q.id === quiz.id)
+                      ? "bg-blue-100 border-blue-500"
+                      : "bg-white hover:bg-gray-50"
+                  }
+                `}
+              >
+                <h3 className="font-semibold mb-2">{quiz.que}</h3>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>A: {quiz.a}</div>
+                  <div>B: {quiz.b}</div>
+                  <div>C: {quiz.c}</div>
+                  <div>D: {quiz.d}</div>
                 </div>
+                {selectedQuizzes.some((q) => q.id === quiz.id) && (
+                  <div className="mt-2 text-green-600 text-sm">✓ Selected</div>
+                )}
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+        )}
 
-          {/* Manual Creation Form */}
-          {showManualForm && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-700">
-                Create New Question
-              </h2>
-              <form onSubmit={handleManualQuizSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Problem Title
-                  </label>
-                  <input
-                    type="text"
-                    value={newQuiz.que}
-                    onChange={(e) =>
-                      setNewQuiz({ ...newQuiz, question: e.target.value })
-                    }
-                    className="w-full p-2 border rounded-md"
-                    required
-                  />
+        {showExistingQuestions && !loader && (
+          <div className="grid md:grid-cols-2 gap-4">
+            {existingQuizzes.map((quiz, index) => (
+              <div
+                key={`${index}-${Date.now()}`}
+                onClick={() => handleExistingQuestionSelect(quiz)}
+                className={`
+                  cursor-pointer p-4 border rounded-lg transition-all 
+                  ${
+                    selectedQuizzes.some((q) => q.id === quiz.id)
+                      ? "bg-purple-100 border-purple-500"
+                      : "bg-white hover:bg-gray-50"
+                  }
+                `}
+              >
+                <h3 className="font-semibold mb-2">{quiz.que}</h3>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>A: {quiz.a}</div>
+                  <div>B: {quiz.b}</div>
+                  <div>C: {quiz.c}</div>
+                  <div>D: {quiz.d}</div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Option A
+                {selectedQuizzes.some((q) => q.id === quiz.id) && (
+                  <div className="mt-2 text-purple-600 text-sm">✓ Selected</div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showManualForm && (
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <form onSubmit={handleManualQuizSubmit} className="space-y-4">
+              <div>
+                <label className="block mb-2">Question</label>
+                <input
+                  type="text"
+                  value={newQuiz.que}
+                  onChange={(e) =>
+                    setNewQuiz({ ...newQuiz, que: e.target.value })
+                  }
+                  className="w-full p-2 border rounded"
+                  required
+                />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                {["a", "b", "c", "d"].map((option) => (
+                  <div key={option}>
+                    <label className="block mb-2">
+                      Option {option.toUpperCase()}
                     </label>
                     <input
                       type="text"
-                      value={newQuiz.a}
+                      value={newQuiz[option]}
                       onChange={(e) =>
-                        setNewQuiz({ ...newQuiz, a: e.target.value })
+                        setNewQuiz({ ...newQuiz, [option]: e.target.value })
                       }
-                      className="w-full p-2 border rounded-md"
+                      className="w-full p-2 border rounded"
                       required
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Option B
-                    </label>
-                    <input
-                      type="text"
-                      value={newQuiz.b}
-                      onChange={(e) =>
-                        setNewQuiz({ ...newQuiz, b: e.target.value })
-                      }
-                      className="w-full p-2 border rounded-md"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Option C
-                    </label>
-                    <input
-                      type="text"
-                      value={newQuiz.c}
-                      onChange={(e) =>
-                        setNewQuiz({ ...newQuiz, c: e.target.value })
-                      }
-                      className="w-full p-2 border rounded-md"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Option D
-                    </label>
-                    <input
-                      type="text"
-                      value={newQuiz.d}
-                      onChange={(e) =>
-                        setNewQuiz({ ...newQuiz, d: e.target.value })
-                      }
-                      className="w-full p-2 border rounded-md"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Correct Answer (a, b, c, or d)
-                  </label>
-                  <select
-                    value={newQuiz.ans}
-                    onChange={(e) =>
-                      setNewQuiz({ ...newQuiz, ans: e.target.value })
-                    }
-                    className="w-full p-2 border rounded-md"
-                    required
-                  >
-                    <option value="">Select answer</option>
-                    <option value="a">A</option>
-                    <option value="b">B</option>
-                    <option value="c">C</option>
-                    <option value="d">D</option>
-                  </select>
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors"
+                ))}
+              </div>
+              <div>
+                <label className="block mb-2">Correct Answer</label>
+                <select
+                  value={newQuiz.ans}
+                  onChange={(e) =>
+                    setNewQuiz({ ...newQuiz, ans: e.target.value })
+                  }
+                  className="w-full p-2 border rounded"
+                  required
                 >
-                  Add Question
-                </button>
-              </form>
-            </div>
-          )}
-        </div>
+                  <option value="">Select Correct Option</option>
+                  <option value="a">A</option>
+                  <option value="b">B</option>
+                  <option value="c">C</option>
+                  <option value="d">D</option>
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
+              >
+                Add Question
+              </button>
+            </form>
+          </div>
+        )}
 
-        {/* Selected Questions Count */}
         {selectedQuizzes.length > 0 && (
-          <div className="flex justify-center mt-10 mb-8">
+          <div className="mt-6 flex justify-between items-center">
             <button
               onClick={() => setShowReviewModal(true)}
-              className="bg-indigo-500 text-white py-2 px-6 rounded-lg hover:bg-indigo-600 transition-all"
+              className="bg-indigo-500 text-white px-6 py-2 rounded hover:bg-indigo-600"
             >
-              Review Selected Questions ({selectedQuizzes.length})
+              Review Questions ({selectedQuizzes.length})
+            </button>
+            <button
+              onClick={nextRound}
+              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+            >
+              Next Round
             </button>
           </div>
         )}
 
-        <button
-          onClick={handleClickNextRound}
-          className={`  py-3  px-8 mt-6 w-full rounded-lg transition-all text-lg font-semibold ${
-            showPreGenerated
-              ? "bg-blue-600 text-white"
-              : "bg-blue-500 text-white hover:bg-blue-600"
-          }`}
-        >
-          Next Round Info addon
-        </button>
-
-        {/* Review Modal */}
         {showReviewModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg max-w-2xl w-full h-[80vh] flex flex-col">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
               <div className="p-6 border-b flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Selected Questions Review
-                </h2>
+                <h2 className="text-2xl font-bold">Selected Questions</h2>
                 <button
                   onClick={() => setShowReviewModal(false)}
                   className="text-gray-500 hover:text-gray-700"
@@ -341,34 +319,23 @@ const AptitudeInfo = () => {
                   ✕
                 </button>
               </div>
-              <div className="p-6 overflow-y-auto flex-1">
-                {selectedQuizzes.length === 0 ? (
-                  <p className="text-gray-500 text-center">
-                    No questions selected yet
-                  </p>
-                ) : (
-                  <div className="space-y-6">
-                    {selectedQuizzes.map((quiz, index) => (
-                      <div
-                        key={quiz.id}
-                        className="p-4 border rounded-lg bg-gray-50"
-                      >
-                        <div className="font-semibold text-gray-700 mb-2">
-                          Question {index + 1}: {quiz.que}
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="text-gray-600">A: {quiz.a}</div>
-                          <div className="text-gray-600">B: {quiz.b}</div>
-                          <div className="text-gray-600">C: {quiz.c}</div>
-                          <div className="text-gray-600">D: {quiz.d}</div>
-                        </div>
-                        <div className="mt-2 text-sm font-medium text-green-600">
-                          Correct Answer: Option {quiz.ans.toUpperCase()}
-                        </div>
-                      </div>
-                    ))}
+              <div className="p-6 space-y-4">
+                {selectedQuizzes.map((quiz, index) => (
+                  <div key={quiz.id} className="border p-4 rounded bg-gray-50">
+                    <h3 className="font-semibold mb-2">
+                      Question {index + 1}: {quiz.que}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>A: {quiz.a}</div>
+                      <div>B: {quiz.b}</div>
+                      <div>C: {quiz.c}</div>
+                      <div>D: {quiz.d}</div>
+                    </div>
+                    <div className="mt-2 text-green-600">
+                      Correct Answer: Option {quiz.ans.toUpperCase()}
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
             </div>
           </div>
@@ -376,6 +343,4 @@ const AptitudeInfo = () => {
       </div>
     </div>
   );
-};
-
-export default AptitudeInfo;
+}

@@ -32,7 +32,6 @@ router.get("/generateQuiz", async (req, res) => {
     const cleanedResponse = rawResponse.slice(7, -4).trim();
     const responseText = JSON.parse(cleanedResponse);
 
-    console.log("ResponseText:", responseText);
     res.status(200).json(responseText); // Send the parsed JSON to the frontend
   } catch (error) {
     console.error("Error generating quiz:", error);

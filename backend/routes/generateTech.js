@@ -23,7 +23,7 @@ Return the set of problems as an array of objects in JSON format, where each obj
 }
 `;
 
-router.get("/generateTechQuiz", async (req, res) => {
+router.get("/generateTech", async (req, res) => {
   const { GoogleGenerativeAI } = require("@google/generative-ai");
   const genAI = new GoogleGenerativeAI(process.env.GEN_AI_API_KEY);
 
@@ -35,7 +35,6 @@ router.get("/generateTechQuiz", async (req, res) => {
     const cleanedResponse = rawResponse.slice(7, -4).trim();
     const responseText = JSON.parse(cleanedResponse);
 
-    console.log("ResponseText:", responseText);
     res.status(200).json(responseText); // Send the parsed JSON to the frontend
   } catch (error) {
     console.error("Error generating tech quiz:", error);

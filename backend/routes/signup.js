@@ -5,8 +5,6 @@ const User = require("../models/userModel");
 
 router.post("/signup", async (req, res) => {
   const { name, email, password } = req.body;
-  console.log("came: ", name, email);
-  console.log(name, email, password);
 
   try {
     const existingUser = await User.findOne({ email });
@@ -16,10 +14,8 @@ router.post("/signup", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ name, email, password: hashedPassword });
-    console.log("Saving user:", newUser);
 
     await newUser.save(); // This line might throw an error
-    console.log("User saved successfully");
 
     res
       .status(200)

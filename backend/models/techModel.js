@@ -11,4 +11,5 @@ const eachTechSchema = new mongoose.Schema({
 
 const techSchema = new mongoose.Schema([eachTechSchema]);
 
-module.exports = mongoose.model("Quiz", techSchema);
+// Use a different model name, like "Tech"
+module.exports = mongoose.models.Tech || mongoose.model("Tech", techSchema);
