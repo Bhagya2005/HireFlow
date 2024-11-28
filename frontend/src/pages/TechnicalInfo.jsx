@@ -115,21 +115,35 @@ export default function TechnicalInfo() {
   };
 
   const nextRound = () => {
-    // Simulated navigation and data submission
     const isHr = localStorage.getItem("hrRound");
 
-    // Simulated POST request
-    fetch(`${BACKEND_URL}/addTechProblems`, {
+    // Simulated POST request to add tech entries
+    fetch(`${BACKEND_URL}/addTech`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ problems: selectedProblems }),
-    }).catch((error) => {
-      console.error("Error submitting problems:", error);
-    });
+      body: JSON.stringify({
+        problems: selectedProblems.map((problem) => ({
+          title: problem.title,
+          desc: problem.desc,
+        })),
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to submit tech entries");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Tech entries submitted successfully:", data);
+      })
+      .catch((error) => {
+        console.error("Error submitting tech entries:", error);
+      });
 
-    // Basic navigation simulation
+    // Navigation simulation
     if (isHr === "true") {
       window.location.href = "/hrInfo";
     } else {
