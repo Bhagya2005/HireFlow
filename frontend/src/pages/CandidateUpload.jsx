@@ -10,7 +10,7 @@ const CandidateUpload = () => {
   const [candidateData, setCandidateData] = useState([]);
   const [candidateEmails, setCandidateEmails] = useState([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -55,22 +55,23 @@ const CandidateUpload = () => {
 
   const handleSubmit = () => {
     //logic to send candidateData to a backend API
-    console.log("Submitting candidate data:", candidateData); 
+    console.log("Submitting candidate data:", candidateData);
     console.log("Submitting candidate emails:", candidateEmails);
-    
+
+    localStorage.setItem("candidateEmails", JSON.stringify(candidateEmails));
+
     setIsSubmitted(true);
     setUploadStatus("Candidates submitted successfully!");
     setTimeout(() => {
-    navigate("/roundSelection")
-      
-    }, 1200)
+      navigate("/roundSelection");
+    }, 1200);
   };
 
-  // Pagination 
+  // Pagination
   const indexOfLastCandidate = currentPage * candidatesPerPage;
   const indexOfFirstCandidate = indexOfLastCandidate - candidatesPerPage;
   const currentCandidates = candidateData.slice(
-    indexOfFirstCandidate, 
+    indexOfFirstCandidate,
     indexOfLastCandidate
   );
 
@@ -95,22 +96,34 @@ const CandidateUpload = () => {
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden">
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
           <h1 className="text-3xl font-bold text-center text-white flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-3">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" x2="12" y1="15" y2="3"/>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-3"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" x2="12" y1="15" y2="3" />
             </svg>
             Candidate Shortlist Upload
           </h1>
         </div>
-        
+
         <div className="p-8 space-y-6">
           <div className="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-lg">
             <h3 className="text-lg font-semibold mb-3 text-blue-800">
               Instructions for Recruiters:
             </h3>
             <ul className="list-disc pl-5 space-y-2 text-blue-700">
-              <li>Prepare an Excel file with these columns:
+              <li>
+                Prepare an Excel file with these columns:
                 <ul className="list-circle pl-5 mt-2">
                   <li>Name (Candidates full name)</li>
                   <li>Email (Candidates contact email)</li>
@@ -122,34 +135,49 @@ const CandidateUpload = () => {
           </div>
 
           <div className="relative group">
-            <input 
-              type="file" 
+            <input
+              type="file"
               accept=".xlsx, .xls"
               onChange={handleFileChange}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
-            <div className="w-full p-6 border-2 border-dashed border-blue-300 
+            <div
+              className="w-full p-6 border-2 border-dashed border-blue-300 
                             rounded-lg bg-blue-50 text-center 
                             group-hover:bg-blue-100 group-hover:border-blue-500
                             transition-all duration-300
-                            flex items-center justify-center">
+                            flex items-center justify-center"
+            >
               <span className="text-blue-700 font-semibold group-hover:text-blue-900 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
-                  <line x1="12" x2="12" y1="15" y2="3"/>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mr-2"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" x2="12" y1="15" y2="3" />
                 </svg>
-                {file ? file.name : 'Click to Upload Excel File'}
+                {file ? file.name : "Click to Upload Excel File"}
               </span>
             </div>
           </div>
-          
+
           {uploadStatus && (
-            <p className={`text-center p-3 rounded-lg shadow-md ${
-              uploadStatus.includes('successfully') 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
+            <p
+              className={`text-center p-3 rounded-lg shadow-md ${
+                uploadStatus.includes("successfully")
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
               {uploadStatus}
             </p>
           )}
@@ -166,12 +194,16 @@ const CandidateUpload = () => {
                   </thead>
                   <tbody>
                     {currentCandidates.map((candidate, index) => (
-                      <tr 
-                        key={index} 
+                      <tr
+                        key={index}
                         className="hover:bg-blue-50 transition-colors even:bg-gray-50"
                       >
-                        <td className="border p-3 text-center">{candidate.name}</td>
-                        <td className="border p-3 text-center">{candidate.email}</td>
+                        <td className="border p-3 text-center">
+                          {candidate.name}
+                        </td>
+                        <td className="border p-3 text-center">
+                          {candidate.email}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -180,8 +212,8 @@ const CandidateUpload = () => {
 
               {/* Pagination Controls */}
               <div className="flex justify-between items-center mt-4">
-                <button 
-                  onClick={prevPage} 
+                <button
+                  onClick={prevPage}
                   disabled={currentPage === 1}
                   className="px-4 py-2 bg-blue-500 text-white rounded 
                              disabled:bg-gray-300 disabled:cursor-not-allowed 
@@ -192,8 +224,8 @@ const CandidateUpload = () => {
                 <span className="text-gray-700">
                   Page {currentPage} of {totalPages}
                 </span>
-                <button 
-                  onClick={nextPage} 
+                <button
+                  onClick={nextPage}
                   disabled={currentPage === totalPages}
                   className="px-4 py-2 bg-blue-500 text-white rounded 
                              disabled:bg-gray-300 disabled:cursor-not-allowed 
@@ -213,7 +245,7 @@ const CandidateUpload = () => {
                              disabled:bg-gray-300 disabled:cursor-not-allowed 
                              font-semibold text-lg shadow-md"
                 >
-                  {isSubmitted ? 'Submitted' : 'Submit Candidates'}
+                  {isSubmitted ? "Submitted" : "Submit Candidates"}
                 </button>
               </div>
             </>
