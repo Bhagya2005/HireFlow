@@ -8,6 +8,7 @@ import RoundSelection from "./pages/RoundSelection";
 import AptitudeInfo from "./pages/AptitudeInfo";
 import TechnicalInfo from "./pages/TechnicalInfo";
 import HRRoundInfo from "./pages/HrRoundInfo";
+import TechRound from "./pages/TechRound";
 const App = () => {
   return (
     <Router>
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/roundSelection" element={<RoundSelection />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/techRound" element={<TechRound />} />
       </Routes>
     </Router>
   );
