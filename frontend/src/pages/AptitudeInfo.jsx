@@ -67,9 +67,11 @@ const AptitudeInfo = () => {
       id: Date.now(),
     };
     setSelectedQuizzes([...selectedQuizzes, newQuizWithId]);
+    console.log(newQuiz);
     setNewQuiz({
       id: Date.now(),
       question: "",
+      que: "",
       a: "",
       b: "",
       c: "",
@@ -78,18 +80,18 @@ const AptitudeInfo = () => {
     });
   };
 
-
   const handleClickNextRound = () => {
     const isTechnical = localStorage.getItem("technical");
     const isHr = localStorage.getItem("hrRound");
-    if(isTechnical === "true") {
+    if (isTechnical === "true") {
       navigate("/technicalInfo");
-    } else if(isHr === "true") {
+    } else if (isHr === "true") {
       navigate("/hrInfo");
     } else {
       navigate("/dashboard");
     }
-  }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">

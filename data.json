@@ -1,0 +1,47 @@
+[
+  {
+    "user": null,
+    "que": "A train running at 60 km/h crosses a pole in 9 seconds. What is the length of the train?",
+    "a": "150 meters",
+    "b": "180 meters",
+    "c": "240 meters",
+    "d": "540 meters",
+    "ans": "b"
+  },
+  {
+    "user": null,
+    "que": "If the ratio of ages of A and B is 3:5 and the sum of their ages is 40 years, what is the age of A?",
+    "a": "12 years",
+    "b": "15 years",
+    "c": "18 years",
+    "d": "24 years",
+    "ans": "a"
+  },
+  {
+    "user": null,
+    "que": "The average of five numbers is 20. If one number is excluded, the average becomes 18. What is the excluded number?",
+    "a": "20",
+    "b": "25",
+    "c": "30",
+    "d": "35",
+    "ans": "c"
+  },
+  {
+    "user": null,
+    "que": "A man can row 9 km/h in still water. If the speed of the current is 3 km/h, how much time will he take to row 27 km downstream?",
+    "a": "2 hours",
+    "b": "3 hours",
+    "c": "4 hours",
+    "d": "5 hours",
+    "ans": "b"
+  },
+  {
+    "user": null,
+    "que": "A shopkeeper bought 80 articles for ₹2400 and sold each at ₹40. What is the total profit percentage?",
+    "a": "20%",
+    "b": "25%",
+    "c": "30%",
+    "d": "33.33%",
+    "ans": "d"
+  }
+]

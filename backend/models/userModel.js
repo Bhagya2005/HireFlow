@@ -23,14 +23,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: Date,
   },
-  startTime: { 
-    type: String, 
-    required: true 
+  startTime: {
+    type: String,
   },
-  endTime: { 
-    type: String, 
-    required: true 
-  }
+  endTime: {
+    type: String,
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);
