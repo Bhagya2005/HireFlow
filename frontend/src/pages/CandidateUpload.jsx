@@ -112,8 +112,8 @@ const CandidateUpload = () => {
             <ul className="list-disc pl-5 space-y-2 text-blue-700">
               <li>Prepare an Excel file with these columns:
                 <ul className="list-circle pl-5 mt-2">
-                  <li>Name (Candidate's full name)</li>
-                  <li>Email (Candidate's contact email)</li>
+                  <li>Name (Candidates full name)</li>
+                  <li>Email (Candidates contact email)</li>
                 </ul>
               </li>
               <li>Ensure column names match the required format</li>

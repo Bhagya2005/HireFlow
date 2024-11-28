@@ -9,9 +9,9 @@ const RoundSelection = () => {
   });
 
   const [roundDurations, setRoundDurations] = useState({
-    aptitude: "",
-    technical: "",
-    hrRound: "",
+    aptitude: "30", // Default duration
+    technical: "60", // Default duration
+    hrRound: "60", // Default duration
   });
 
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const RoundSelection = () => {
     if (selectedRounds[round]) {
       setRoundDurations((prev) => ({
         ...prev,
-        [round]: "",
+        [round]: "0",
       }));
     }
   };
@@ -57,7 +57,7 @@ const RoundSelection = () => {
     if (selectedRounds.aptitude === true) {
       navigate("/aptitudeInfo");
     } else if (selectedRounds.technical === true) {
-      navigate("/generateTech");
+      navigate("/technicalInfo");
     } else if (selectedRounds.hrRound === true) {
       // Navigate to HR round page
     } else {
@@ -105,7 +105,7 @@ const RoundSelection = () => {
                 <input
                   type="number"
                   id="aptitudeTime"
-                  min="1"
+                  step="5" 
                   value={roundDurations.aptitude}
                   onChange={(e) =>
                     handleDurationChange("aptitude", e.target.value)
@@ -144,7 +144,8 @@ const RoundSelection = () => {
                 <input
                   type="number"
                   id="technicalTime"
-                  min="1"
+                  min="0"
+                  step="5" // Increment by 5
                   value={roundDurations.technical}
                   onChange={(e) =>
                     handleDurationChange("technical", e.target.value)
@@ -183,7 +184,8 @@ const RoundSelection = () => {
                 <input
                   type="number"
                   id="hrTime"
-                  min="1"
+                  min="0"
+                  step="5" // Increment by 5
                   value={roundDurations.hrRound}
                   onChange={(e) =>
                     handleDurationChange("hrRound", e.target.value)
