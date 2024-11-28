@@ -68,19 +68,8 @@ export default function TechnicalInfo() {
       .catch((error) => {
         console.error("Error fetching technical problems:", error);
         setLoader(false);
-        // Fallback data in case of error
-        setPreGeneratedProblems([
-          {
-            id: "P1A7X",
-            title: "Reverse a String",
-            desc: 'Problem statement: Write a function to reverse a given string.\n\nInput format: A single string.\n\nOutput format: The reversed string.\n\nExample:\nInput:  "hello"\nOutput: "olleh"\n\nConstraints: The string will contain only lowercase English alphabets. The length of the string will be between 1 and 1000.',
-          },
-          {
-            id: "P2B8Y",
-            title: "Find Maximum Subarray",
-            desc: "Problem statement: Implement Kadane's algorithm to find the contiguous subarray with the largest sum.\n\nInput format: An array of integers.\n\nOutput format: The maximum sum of a contiguous subarray.\n\nExample:\nInput: [-2, 1, -3, 4, -1, 2, 1, -5, 4]\nOutput: 6 (subarray [4, -1, 2, 1])\n\nConstraints: The array will contain between 1 and 10^5 elements.",
-          },
-        ]);
+
+        setPreGeneratedProblems([]);
       });
   };
 
@@ -124,6 +113,7 @@ export default function TechnicalInfo() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        userId: localStorage.getItem("userId"),
         problems: selectedProblems.map((problem) => ({
           title: problem.title,
           desc: problem.desc,

@@ -1,33 +1,44 @@
 const express = require("express");
 const router = express.Router();
-const Tech = require("../models/techModel"); // Replace with actual path to your tech model
+const User = require("../models/userModel"); // User model to fetch tech problems
 
 router.get("/getTech", async (req, res) => {
-  const { userId } = req.query;
-  console.log("get techhh.....");
+  const { userId } = req.query; // Get the userId from query parameters
 
   try {
-    let techItems;
-
     if (userId) {
-      // If userId is provided, filter tech items by userId
-      techItems = await Tech.find({ user: userId });
+      // If userId is provided, find the user and return their specific tech problems
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
+
+      // Return the tech problems related to this user
+      return res
+        .status(200)
+        .json({ success: true, techEntries: user.allTechProblems });
     } else {
-      // If userId is not provided, return all tech items
-      techItems = await Tech.find();
+      // If no userId is provided, return all tech problems from all users
+      const allTechProblems = await User.find().select("allTechProblems"); // This will return all tech problems from all users
+
+      // Flatten the array of tech problems
+      const techEntries = allTechProblems
+        .map((user) => user.allTechProblems)
+        .flat();
+
+      return res.status(200).json({ success: true, techEntries });
     }
-
-    const modifiedTechItems = techItems.map((tech) => {
-      tech.id = tech._id;
-      return tech;
-    });
-
-    console.log(modifiedTechItems);
-
-    res.status(200).json(modifiedTechItems);
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Something went wrong from backend");
+    console.error("Error fetching tech problems:", err);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Something went wrong while fetching tech problems.",
+      });
   }
 });
 

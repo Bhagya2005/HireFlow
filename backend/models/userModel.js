@@ -9,6 +9,14 @@ const userSchema = new mongoose.Schema({
   date: { type: String, default: Date },
   startTime: { type: String },
   endTime: { type: String },
+  allAptitudes: {
+    type: Array,
+    default: [], // Array of tech problems directly
+  },
+  allTechProblems: {
+    type: Array,
+    default: [], // Array of tech problems directly
+  },
 });
 
 // Use "User" as the model name

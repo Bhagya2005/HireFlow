@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Play, AlertCircle, Sun, Moon } from "lucide-react";
+import {
+  Play,
+  AlertCircle,
+  Sun,
+  Moon,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import axios from "axios";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 const LANGUAGE_VERSIONS = {
   python: "3.10.0",
@@ -27,33 +36,44 @@ const executeCode = async (language, sourceCode) => {
   return response.data;
 };
 
-const SAMPLE_PROBLEM = {
-  title: "Two Sum",
-  description: `Given an array of integers nums and an integer target, return indices of two numbers that add up to target.\n
-You may assume each input has exactly one solution.\n
-Example 1:\n
-Input: nums = [2,7,11,15], target = 9\n
-Output: [0,1]\n
-Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].\n
-\n
-Example 2:\n
-Input: nums = [3,2,4], target = 6\n
-Output: [1,2]\n
-\n
-Constraints:\n
-• 2 <= nums.length <= 104\n
-• -109 <= nums[i] <= 109\n
-• -109 <= target <= 109\n
-• Only one valid answer exists.`,
-};
-
 const TechRound = () => {
+  const [problems, setProblems] = useState([]);
+  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
   const [selectedLanguage, setSelectedLanguage] = useState("python");
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  // Store code for each problem separately
+  const [codeStore, setCodeStore] = useState({});
+
+  useEffect(() => {
+    const fetchProblems = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/getTech`, {
+          params: { userId: localStorage.getItem("userId") },
+          headers: { "Content-Type": "application/json" },
+        });
+        setProblems(response.data.techEntries || []);
+
+        // Initialize code store for all problems
+        const initialCodeStore = {};
+        response.data.techEntries.forEach((_, index) => {
+          initialCodeStore[index] = "";
+        });
+        setCodeStore(initialCodeStore);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching tech:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchProblems();
+  }, []);
 
   const handleRunCode = async () => {
     setIsRunning(true);
@@ -120,63 +140,151 @@ const TechRound = () => {
     });
   };
 
+  const handleProblemChange = (newIndex) => {
+    // Save current code to store
+    setCodeStore((prev) => ({
+      ...prev,
+      [currentProblemIndex]: code,
+    }));
+
+    // Set new problem index
+    setCurrentProblemIndex(newIndex);
+
+    // Load code for new problem
+    setCode(codeStore[newIndex] || "");
+
+    // Reset output and error
+    setOutput("");
+    setError(null);
+  };
+
   useEffect(() => {
     document.body.classList.toggle("dark", isDarkMode);
     document.body.classList.toggle("light", !isDarkMode);
   }, [isDarkMode]);
 
+  if (loading) {
+    return (
+      <div
+        className={`min-h-screen flex items-center justify-center ${
+          isDarkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-800"
+        }`}
+      >
+        Loading problems...
+      </div>
+    );
+  }
+
+  if (!problems.length) {
+    return (
+      <div
+        className={`min-h-screen flex items-center justify-center ${
+          isDarkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-800"
+        }`}
+      >
+        No problems found.
+      </div>
+    );
+  }
+
+  const currentProblem = problems[currentProblemIndex];
+
   return (
     <div
-      className={`min-h-screen p-6 ${
+      className={`min-h-screen min-w-full p-4 flex ${
         isDarkMode
           ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
           : "bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200"
       }`}
     >
-      <div className="grid grid-cols-2 gap-6 h-full">
+      <div className="grid grid-cols-2 gap-4 w-full h-[calc(100vh-2rem)]">
         {/* Left Panel */}
         <div
-          className={`relative rounded-xl shadow-lg p-6 flex-1 ${
+          className={`relative rounded-xl shadow-lg p-4 flex flex-col overflow-hidden ${
             isDarkMode
               ? "bg-gray-800/80 border border-gray-700"
               : "bg-white/90 border border-gray-200"
           }`}
         >
-          {/* Theme Toggle Button - Moved inside left panel */}
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className={`absolute top-6 right-6 p-3 rounded-full shadow-lg transition-all duration-300 ${
-              isDarkMode
-                ? "bg-gray-700 hover:bg-gray-600 text-yellow-400"
-                : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-            }`}
-          >
-            {isDarkMode ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-          </button>
+          {/* Problem Navigation and Theme Toggle */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => handleProblemChange(currentProblemIndex - 1)}
+                disabled={currentProblemIndex === 0}
+                className={`p-2 rounded-full ${
+                  currentProblemIndex === 0
+                    ? "opacity-50 cursor-not-allowed"
+                    : isDarkMode
+                    ? "hover:bg-gray-700"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                <ChevronLeft
+                  className={isDarkMode ? "text-gray-300" : "text-gray-600"}
+                />
+              </button>
+
+              <span
+                className={`text-sm ${
+                  isDarkMode ? "text-gray-300" : "text-gray-600"
+                }`}
+              >
+                Problem {currentProblemIndex + 1} of {problems.length}
+              </span>
+
+              <button
+                onClick={() => handleProblemChange(currentProblemIndex + 1)}
+                disabled={currentProblemIndex === problems.length - 1}
+                className={`p-2 rounded-full ${
+                  currentProblemIndex === problems.length - 1
+                    ? "opacity-50 cursor-not-allowed"
+                    : isDarkMode
+                    ? "hover:bg-gray-700"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                <ChevronRight
+                  className={isDarkMode ? "text-gray-300" : "text-gray-600"}
+                />
+              </button>
+            </div>
+
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`p-3 rounded-full shadow-lg transition-all duration-300 ${
+                isDarkMode
+                  ? "bg-gray-700 hover:bg-gray-600 text-yellow-400"
+                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+              }`}
+            >
+              {isDarkMode ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </button>
+          </div>
 
           <h1
-            className={`text-3xl font-bold mb-6 ${
+            className={`text-3xl font-bold mb-4 ${
               isDarkMode
                 ? "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400"
                 : "text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
             }`}
           >
-            {SAMPLE_PROBLEM.title}
+            {currentProblem.title}
           </h1>
-          <div className="prose max-w-none">
-            {formatDescription(SAMPLE_PROBLEM.description)}
+          <div className="prose max-w-none overflow-y-auto pr-2">
+            {formatDescription(currentProblem.desc)}
           </div>
         </div>
 
         {/* Right Panel */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4 h-full">
           {/* Code Editor */}
           <div
-            className={`rounded-xl shadow-lg p-6 ${
+            className={`rounded-xl shadow-lg p-4 flex-1 flex flex-col ${
               isDarkMode
                 ? "bg-gray-800/80 border border-gray-700"
                 : "bg-white/90 border border-gray-200"
@@ -214,7 +322,7 @@ const TechRound = () => {
             </div>
 
             <div
-              className={`rounded-lg overflow-hidden ${
+              className={`rounded-lg overflow-hidden flex-1 ${
                 isDarkMode
                   ? "border border-gray-700 bg-gray-900/50"
                   : "border border-gray-300 bg-gray-50"
@@ -223,7 +331,7 @@ const TechRound = () => {
               <textarea
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                className={`w-full h-[50vh] p-4 font-mono text-sm resize-none focus:outline-none bg-transparent ${
+                className={`w-full h-full p-4 font-mono text-sm resize-none focus:outline-none bg-transparent ${
                   isDarkMode ? "text-gray-200" : "text-gray-800"
                 }`}
                 spellCheck="false"
@@ -234,7 +342,7 @@ const TechRound = () => {
 
           {/* Output Panel */}
           <div
-            className={`rounded-xl shadow-lg p-6 ${
+            className={`rounded-xl shadow-lg p-4 ${
               isDarkMode
                 ? "bg-gray-800/80 border border-gray-700"
                 : "bg-white/90 border border-gray-200"
