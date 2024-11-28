@@ -5,12 +5,12 @@ const eachQuizSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
   },
-  que: { type: String, required: true },
-  a: { type: String, required: true },
-  b: { type: String, required: true },
-  c: { type: String, required: true },
-  d: { type: String, required: true },
-  ans: { type: String, required: true },
+  que: { type: String },
+  a: { type: String },
+  b: { type: String },
+  c: { type: String },
+  d: { type: String },
+  ans: { type: String },
 });
 
 const quizSchema = new mongoose.Schema([eachQuizSchema]);

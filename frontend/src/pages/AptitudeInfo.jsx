@@ -90,6 +90,17 @@ const AptitudeInfo = () => {
     } else {
       navigate("/dashboard");
     }
+
+    console.log("selectedQuizzes: ", selectedQuizzes);
+
+    try {
+      const response = axios.post(`${BACKEND_URL}/addQuiz`, {
+        questions: selectedQuizzes,
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (

@@ -3,24 +3,29 @@ const router = express.Router();
 const Quiz = require("../models/quizModel");
 
 router.post("/addQuiz", async (req, res) => {
-  const { userId, que, a, b, c, d, ans } = req.body;
+  const { userId, questions } = req.body; // Accepting questions as an array
+
+  console.log("Received userId and questions:", userId, questions);
 
   try {
-    const newQuiz = new Quiz({
-      user: userId || "",
-      que,
-      a,
-      b,
-      c,
-      d,
-      ans,
-    });
+    // Mapping the incoming questions to the appropriate format
+    const quizzesToSave = questions.map((quiz) => ({
+      user: null, // Optional: You can leave it empty or handle it accordingly
+      que: quiz.que,
+      a: quiz.a,
+      b: quiz.b,
+      c: quiz.c,
+      d: quiz.d,
+      ans: quiz.ans,
+    }));
 
-    await newQuiz.save();
-    res.status(201).send("Quiz added successfully!");
+    // Insert all the quizzes into the database
+    const savedQuizzes = await Quiz.insertMany(quizzesToSave);
+
+    res.status(201).json({ success: true, quizzes: savedQuizzes });
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Something went wrong from backend");
+    console.error("Error saving quizzes:", err);
+    res.status(500).send("Something went wrong while adding quizzes.");
   }
 });
 
