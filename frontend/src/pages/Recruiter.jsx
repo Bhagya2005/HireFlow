@@ -18,7 +18,7 @@ const RecruiterInfo = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!startTime || !endTime || !date || !name || !email || !companyName || !jobrole) {
+    if (!name || !email || !companyName || !jobrole) {
       alert("Please select both start and end times.");
       return;
     }
@@ -151,57 +151,6 @@ const RecruiterInfo = () => {
               onChange={(e) => setjobRole(e.target.value)}
               className="w-full px-4 py-2 text-sm border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-          </div>
-          <div className="space-y-2">
-            <label
-              htmlFor="date"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Date
-            </label>
-            <input
-              id="date"
-              name="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2 text-sm border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label
-                htmlFor="startTime"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Start Time
-              </label>
-              <input
-                id="startTime"
-                name="startTime"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-4 py-2 text-sm border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="endTime"
-                className="block text-sm font-medium text-gray-700"
-              >
-                End Time
-              </label>
-              <input
-                id="endTime"
-                name="endTime"
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-4 py-2 text-sm border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
           </div>
           <button
             onClick={handleSubmit}

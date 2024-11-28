@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import sendEmail from "../components/email";
 
 export default function HRRoundInfo() {
   const [isInstructionsRead, setIsInstructionsRead] = useState(false);
@@ -8,13 +9,66 @@ export default function HRRoundInfo() {
 
   const handleProceed = () => {
     if (isInstructionsRead) {
+      handleSendEmails();
       setShowToast(true);
       setTimeout(() => {
         setShowToast(false);
-
         navigate("/dashboard");
       }, 1700);
     }
+  };
+
+  const handleSendEmails = async () => {
+    // Retrieve candidate data (name and email) from localStorage
+    const candidateData =
+      JSON.parse(localStorage.getItem("candidateData")) || [];
+    const companyName = localStorage.getItem("companyName") || "Your Company";
+    const HRemail = localStorage.getItem("email") || "hr@yourcompany.com";
+
+    // Check for aptitudeDuration or technicalDuration
+    const aptitudeDuration = localStorage.getItem("aptitudeDuration");
+    const technicalDuration = localStorage.getItem("technicalDuration");
+
+    // If no candidate data found in localStorage
+    if (candidateData.length === 0) {
+      alert("No candidate data found in localStorage");
+      return;
+    }
+
+    // Determine which test to send based on the available duration
+    const duration = aptitudeDuration || technicalDuration;
+    const testType = aptitudeDuration
+      ? "Aptitude Test with Reasoning"
+      : "Technical Test";
+    const testLink = aptitudeDuration
+      ? "https://example.com/aptitude-test-link"
+      : "https://example.com/technical-test-link";
+    const subject = `${testType} Invitation for ${companyName}`;
+
+    // Loop through candidateData, which contains objects with name and email
+    for (const candidate of candidateData) {
+      const { name, email } = candidate; // Destructure name and email from the candidate object
+      const templateParams = {
+        candidateName: name, // Use the candidate's name
+        companyName,
+        dateAndTime: "12th Dec 2024, 10:00 AM", // Example date and time
+        duration: duration || "60", // Use duration from localStorage, or fallback to 60 minutes
+        testLink,
+        hr_email: HRemail,
+        to_email: email, // Send email to the candidate's email
+        subject, // Custom subject for the email
+        roundName: testType,
+      };
+
+      try {
+        await sendEmail(templateParams); // Wait for email to be sent before proceeding
+        console.log(`Email sent successfully to ${email}`);
+      } catch (error) {
+        console.error(`Error sending email to ${email}:`, error);
+      }
+    }
+
+    alert("Emails sent successfully");
   };
 
   return (
@@ -31,9 +85,8 @@ export default function HRRoundInfo() {
             <ul className="space-y-3 list-disc list-inside text-gray-700">
               <li className="flex items-start">
                 <span className="mr-2 text-blue-600">→</span>
-                Both you and the candidate will receive an{" "}
-                interview key and a link via
-                email at the scheduled time.
+                Both you and the candidate will receive an interview key and a
+                link via email at the scheduled time.
               </li>
               <li className="flex items-start">
                 <span className="mr-2 text-blue-600">→</span>
@@ -46,13 +99,12 @@ export default function HRRoundInfo() {
               <li className="flex items-start">
                 <span className="mr-2 text-blue-600">→</span>
                 After the interview is completed, the recruiter will decide
-                whether the candidate is selectedor{" "}
-                not selected for the company.
+                whether the candidate is selected or not.
               </li>
               <li className="flex items-start">
                 <span className="mr-2 text-blue-600">→</span>
-                Based on the recruiters decision, a response will be sent to the
-                candidate via email.
+                Based on the recruiter’s decision, a response will be sent to
+                the candidate via email.
               </li>
             </ul>
           </div>

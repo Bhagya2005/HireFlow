@@ -59,7 +59,7 @@ const RoundSelection = () => {
     } else if (selectedRounds.technical === true) {
       navigate("/technicalInfo");
     } else if (selectedRounds.hrRound === true) {
-      // Navigate to HR round page
+      navigate("/hrInfo");
     } else {
       alert("Please select at least one round.");
     }

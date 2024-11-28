@@ -16,6 +16,7 @@ const CandidateUpload = () => {
     const selectedFile = event.target.files[0];
 
     if (selectedFile) {
+      // Ensure it's a valid Excel file
       if (
         selectedFile.type !==
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" &&
@@ -30,25 +31,33 @@ const CandidateUpload = () => {
 
       const reader = new FileReader();
       reader.onload = (e) => {
+        // Read the file as binary data
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
+        const sheetName = workbook.SheetNames[0]; // Assume the first sheet
         const worksheet = workbook.Sheets[sheetName];
+
+        // Convert worksheet to JSON array
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
+        // Extract `Name` and `Email` fields
         const parsedData = jsonData.map((row) => ({
-          name: row["Name"] || "N/A",
-          email: row["Email"] || "N/A",
+          name: row["Name"] || "N/A", // Default to "N/A" if `Name` is missing
+          email: row["Email"] || "N/A", // Default to "N/A" if `Email` is missing
         }));
 
+        // Extract only emails for later use
         const emails = jsonData
           .map((row) => row["Email"])
-          .filter((email) => email);
+          .filter((email) => email); // Filter out empty emails
 
+        // Update state with extracted data
         setCandidateEmails(emails);
         setCandidateData(parsedData);
         setUploadStatus("File uploaded successfully");
       };
+
+      // Read the file
       reader.readAsArrayBuffer(selectedFile);
     }
   };
@@ -57,8 +66,13 @@ const CandidateUpload = () => {
     //logic to send candidateData to a backend API
     console.log("Submitting candidate data:", candidateData);
     console.log("Submitting candidate emails:", candidateEmails);
+    console.log("name with email :", candidateData);
 
     localStorage.setItem("candidateEmails", JSON.stringify(candidateEmails));
+    const candidateDataString = JSON.stringify(candidateData);
+
+    // Store the JSON string in localStorage
+    localStorage.setItem("candidateData", candidateDataString);
 
     setIsSubmitted(true);
     setUploadStatus("Candidates submitted successfully!");
