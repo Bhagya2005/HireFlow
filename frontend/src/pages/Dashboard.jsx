@@ -6,52 +6,115 @@ const RecruitmentDashboard = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-  const [aptitudePassesCandidates, setAptitudePassesCandidates] = useState([]);
+  const [failedCandidates, setfailedCandidates] = useState([])
+  const [passesCandidates, setpassedCandidates] = useState([])
   const AllCandidates = JSON.parse(localStorage.getItem("candidateData")) || [];
-  const [aptitudeFailedCandidates, setAptitudeFailedCandidates] = useState([]);
   const [name, setName] = useState("");
   const [companyName, setComapnyName] = useState("");
   const [email, setEmail] = useState("");
 
   useEffect(() => {
-    const fetchUserInfo = async () => {
-      const userId = localStorage.getItem("userId");
-      if (!userId) return;
 
-      try {
-        const response = await axios.get(
-          `${BACKEND_URL}/getUserInfo/${userId}`
-        );
-        setAptitudeFailedCandidates(response.data.aptitudeFailedCandidates || []);
-        setAptitudePassesCandidates(
-          response.data.aptitudePassesCandidates || []
-        );
-        setName(response.data.name);
-        setComapnyName(response.data.companyName);
-        setEmail(response.data.email);
-      } catch (error) {
-        console.error("Error fetching user info:", error);
-      }
-    };
+    const ActiveRound = activeRound
 
-    fetchUserInfo();
-  }, []);
+    if(ActiveRound === "aptitude") {
+      console.log("Hello from aptitude");
+      
+      const fetchUserInfo = async () => {
+        const userId = localStorage.getItem("userId");
+        if (!userId) return;
+  
+        try {
+          const response = await axios.get(
+            `${BACKEND_URL}/getUserInfo/${userId}`
+          );
+          setfailedCandidates(
+            response.data.aptitudeFailedCandidates || []
+          );
+          setpassedCandidates(
+            response.data.aptitudePassesCandidates || []
+          );
+          setName(response.data.name);
+          setComapnyName(response.data.companyName);
+          setEmail(response.data.email);
+        } catch (error) {
+          console.error("Error fetching user info:", error);
+        }
+      };
+      fetchUserInfo();
+    } if(ActiveRound === "technical") {
+      console.log("Hello from technical");
+      
+      const fetchUserInfo = async () => {
+        const userId = localStorage.getItem("userId");
+        if (!userId) return;
+  
+        try {
+          const response = await axios.get(
+            `${BACKEND_URL}/getUserInfo/${userId}`
+          );
+          setfailedCandidates(
+            response.data.aptitudeFailedCandidates || []
+          );
+          setpassedCandidates(
+            response.data.aptitudePassesCandidates || []
+          );
+          setName(response.data.name);
+          setComapnyName(response.data.companyName);
+          setEmail(response.data.email);
+        } catch (error) {
+          console.error("Error fetching user info:", error);
+        }
+      };
+      fetchUserInfo();
+    } 
+
+    if(ActiveRound === "hr") {
+      console.log("Hello from hr");
+      
+      const fetchUserInfo = async () => {
+        const userId = localStorage.getItem("userId");
+        if (!userId) return;
+  
+        try {
+          const response = await axios.get(
+            `${BACKEND_URL}/getUserInfo/${userId}`
+          );
+          setfailedCandidates(
+            response.data.aptitudeFailedCandidates || []
+          );
+          setpassedCandidates(
+            response.data.aptitudePassesCandidates || []
+          );
+          setName(response.data.name);
+          setComapnyName(response.data.companyName);
+          setEmail(response.data.email);
+        } catch (error) {
+          console.error("Error fetching user info:", error);
+        }
+      };
+      fetchUserInfo();
+    } 
+    
+
+    
+  }, [activeRound]);
 
   const filteredCandidates = (() => {
     let candidates = AllCandidates;
 
     if (filterStatus === "selected") {
-      candidates = candidates.filter(candidate =>
-        aptitudePassesCandidates.includes(candidate.email)
+      candidates = candidates.filter((candidate) =>
+        passesCandidates.includes(candidate.email)
       );
     } else if (filterStatus === "not-selected") {
-      candidates = candidates.filter(candidate =>
-        aptitudeFailedCandidates.includes(candidate.email)
+      candidates = candidates.filter((candidate) =>
+        failedCandidates.includes(candidate.email)
       );
     }
 
     // Apply search filter
-    candidates = candidates.filter(candidate =>
+    candidates = candidates.filter((candidate) =>
       candidate.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -86,20 +149,44 @@ const RecruitmentDashboard = () => {
         </div>
 
         <div className="space-y-4">
-          {Object.entries(roundProgressMap).map(([round, config]) => (
-            <button
-              key={round}
-              onClick={() => setActiveRound(round)}
-              className={`w-full py-3 rounded-lg text-white font-semibold transition-all duration-300 
-                ${
-                  activeRound === round
-                    ? `${config.color} scale-105`
-                    : "bg-gray-300 hover:bg-gray-400"
-                }`}
-            >
-              {config.text}
-            </button>
-          ))}
+          {/* Aptitude Round Button */}
+          <button
+            onClick={() => setActiveRound("aptitude")}
+            className={`w-full py-3 rounded-lg text-white font-semibold transition-all duration-300 
+      ${
+        activeRound === "aptitude"
+          ? "bg-blue-500 scale-105"
+          : "bg-gray-300 hover:bg-gray-400"
+      }`}
+          >
+            Aptitude Round
+          </button>
+
+          {/* Technical Round Button */}
+          <button
+            onClick={() => setActiveRound("technical")}
+            className={`w-full py-3 rounded-lg text-white font-semibold transition-all duration-300 
+      ${
+        activeRound === "technical"
+          ? "bg-green-500 scale-105"
+          : "bg-gray-300 hover:bg-gray-400"
+      }`}
+          >
+            Technical Round
+          </button>
+
+          {/* HR Round Button */}
+          <button
+            onClick={() => setActiveRound("hr")}
+            className={`w-full py-3 rounded-lg text-white font-semibold transition-all duration-300 
+      ${
+        activeRound === "hr"
+          ? "bg-purple-500 scale-105"
+          : "bg-gray-300 hover:bg-gray-400"
+      }`}
+          >
+            HR Round
+          </button>
         </div>
       </div>
 
