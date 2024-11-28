@@ -33,6 +33,7 @@ const updateUser = require("./routes/updateUser");
 const generateTech = require("./routes/generateTech");
 const addTech = require("./routes/addTech");
 const getTech = require("./routes/getTech");
+const getUserInfo = require("./routes/getUserInfo");
 
 app.use(signup);
 app.use(login);
@@ -43,6 +44,7 @@ app.use(updateUser);
 app.use(generateTech);
 app.use(addTech);
 app.use(getTech);
+app.use(getUserInfo);
 
 app.get("/", async (req, res) => {
   const users = await User.find();

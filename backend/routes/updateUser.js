@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/userModel");
-const dayjs = require("dayjs");
 
 router.post("/updateUser", async (req, res) => {
   const {
@@ -13,6 +12,8 @@ router.post("/updateUser", async (req, res) => {
     companyName,
     email,
     jobrole,
+    passingMarks,
+    userEmail,
   } = req.body;
 
   try {
@@ -21,16 +22,23 @@ router.post("/updateUser", async (req, res) => {
       return res.status(404).send("User not found");
     }
 
-    // Format the date to "YYYY-MM-DD" for MongoDB
+    // Update user details
     if (date) user.date = date;
-
     if (name) user.name = name;
     if (companyName) user.companyName = companyName;
     if (jobrole) user.jobRole = jobrole;
+    if (passingMarks) user.aptitudePassingMarks = passingMarks;
+    if (startTime) user.startTime = startTime;
+    if (endTime) user.endTime = endTime;
 
-    // Convert startTime and endTime to Date objects
-    if (startTime) user.startTime = startTime; // Convert to Date
-    if (endTime) user.endTime = endTime; // Convert to Date
+    // Check if passingMarks are set and if score meets/exceeds the passingMarks
+    if (passingMarks && user.aptitudePassingMarks <= passingMarks) {
+      if (!user.aptitudePassesCandidates.includes(userEmail)) {
+        user.aptitudePassesCandidates.push(userEmail); // Add email to passed candidates
+      }
+    } else {
+      user.aptitudeFailedCandidates.push(userEmail); // Add email to failed candidates
+    }
 
     if (email) {
       const emailExists = await User.findOne({ email });

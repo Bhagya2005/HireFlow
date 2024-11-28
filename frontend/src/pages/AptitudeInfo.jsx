@@ -8,7 +8,6 @@ export default function AptitudeInfo() {
   const [showManualForm, setShowManualForm] = useState(false);
   const [showExistingQuestions, setShowExistingQuestions] = useState(false);
   const [selectedQuizzes, setSelectedQuizzes] = useState([]);
-  const [showReviewModal, setShowReviewModal] = useState(false);
   const [loader, setLoader] = useState(false);
 
   const [preGeneratedQuizzes, setPreGeneratedQuizzes] = useState([]);
@@ -21,6 +20,7 @@ export default function AptitudeInfo() {
     d: "",
     ans: "",
   });
+  const [passingMarks, setPassingMarks] = useState(0);
 
   // Replace with your actual backend URL
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -48,20 +48,6 @@ export default function AptitudeInfo() {
       c: "",
       d: "",
       ans: "",
-    });
-  };
-
-  // const simulateLoading = () => {
-  //   setLoader(true);
-  //   setTimeout(() => setLoader(false), 1500);
-  // };
-
-  const handleExistingQuestionSelect = (quiz) => {
-    setSelectedQuizzes((prevSelectedQuizzes) => {
-      const quizIndex = prevSelectedQuizzes.findIndex((q) => q.id === quiz.id);
-      return quizIndex > -1
-        ? prevSelectedQuizzes.filter((q) => q.id !== quiz.id)
-        : [...prevSelectedQuizzes, quiz];
     });
   };
 
@@ -98,9 +84,35 @@ export default function AptitudeInfo() {
       });
   };
 
-  function nextRound() {
+  const updatePassingMarks = () => {
+    setPassingMarks(Math.ceil(selectedQuizzes.length / 2));
+  };
+
+  async function nextRound() {
+  console.log("Hello :",passingMarks);
+   // or however you're calculating passingMarks
+  console.log("Passing marks of aptitude: ", passingMarks);
+
+  // Ensure userId exists in localStorage
+  const userID = localStorage.getItem("userId");
+
+  if (!userID) {
+    console.error("User ID not found in localStorage");
+    return;
+  }
+
+  try {
+    // Make sure to await the response from the backend API call
+    const response = await axios.post(`${BACKEND_URL}/updateUser`, {
+      userId: userID,
+      passingMarks
+    });
+    console.log(response.data); // "User updated successfully"
+
+    // Navigate based on round completion status
     const isTechnical = localStorage.getItem("technical");
     const isHr = localStorage.getItem("hrRound");
+    
     if (isTechnical === "true") {
       navigate("/technicalInfo");
     } else if (isHr === "true") {
@@ -109,17 +121,35 @@ export default function AptitudeInfo() {
       navigate("/dashboard");
     }
 
-    console.log("selectedQuizzes: ", selectedQuizzes);
+    console.log("Selected Quizzes: ", selectedQuizzes);
 
-    try {
-      const response = axios.post(`${BACKEND_URL}/addQuiz`, {
-        questions: selectedQuizzes,
-      });
-      console.log(response.data);
-    } catch (error) {
-      console.error(error);
-    }
+    // Add the quizzes with passing marks
+    const quizResponse = await axios.post(`${BACKEND_URL}/addQuiz`, {
+      questions: selectedQuizzes,
+      userId: userID,
+      passingMarks
+    });
+    console.log(quizResponse.data);
+
+  } catch (error) {
+    console.error("Error updating user or adding quiz:", error);
   }
+}
+
+
+  const handleExistingQuestionSelect = (quiz) => {
+    setSelectedQuizzes((prevSelectedQuizzes) => {
+      const quizIndex = prevSelectedQuizzes.findIndex((q) => q.id === quiz.id);
+      const updatedQuizzes = quizIndex > -1
+        ? prevSelectedQuizzes.filter((q) => q.id !== quiz.id)
+        : [...prevSelectedQuizzes, quiz];
+      // Update passing marks after selection/deselection
+      updatePassingMarks(updatedQuizzes);
+      return updatedQuizzes;
+    });
+  };
+  
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-4xl mx-auto">
@@ -134,7 +164,6 @@ export default function AptitudeInfo() {
               setShowManualForm(false);
               setShowExistingQuestions(false);
               generateQuiz();
-              // simulateLoading();
             }}
             className="py-4 px-8 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-all"
           >
@@ -156,7 +185,6 @@ export default function AptitudeInfo() {
               setShowPreGenerated(false);
               getAlreadyGeneratedQuiz();
               setShowManualForm(false);
-              // simulateLoading();
             }}
             className="py-4 px-8 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-all"
           >
@@ -176,14 +204,11 @@ export default function AptitudeInfo() {
               <div
                 key={quiz.id}
                 onClick={() => handlePreGeneratedSelect(quiz)}
-                className={`
-                  cursor-pointer p-4 border rounded-lg transition-all 
-                  ${
-                    selectedQuizzes.some((q) => q.id === quiz.id)
-                      ? "bg-blue-100 border-blue-500"
-                      : "bg-white hover:bg-gray-50"
-                  }
-                `}
+                className={`cursor-pointer p-4 border rounded-lg transition-all ${
+                  selectedQuizzes.some((q) => q.id === quiz.id)
+                    ? "bg-blue-100 border-blue-500"
+                    : "bg-white hover:bg-gray-50"
+                }`}
               >
                 <h3 className="font-semibold mb-2">{quiz.que}</h3>
                 <div className="grid grid-cols-2 gap-2 text-sm">
@@ -206,14 +231,11 @@ export default function AptitudeInfo() {
               <div
                 key={`${index}-${Date.now()}`}
                 onClick={() => handleExistingQuestionSelect(quiz)}
-                className={`
-                  cursor-pointer p-4 border rounded-lg transition-all 
-                  ${
-                    selectedQuizzes.some((q) => q.id === quiz.id)
-                      ? "bg-purple-100 border-purple-500"
-                      : "bg-white hover:bg-gray-50"
-                  }
-                `}
+                className={`cursor-pointer p-4 border rounded-lg transition-all ${
+                  selectedQuizzes.some((q) => q.id === quiz.id)
+                    ? "bg-purple-100 border-purple-500"
+                    : "bg-white hover:bg-gray-50"
+                }`}
               >
                 <h3 className="font-semibold mb-2">{quiz.que}</h3>
                 <div className="grid grid-cols-2 gap-2 text-sm">
@@ -248,9 +270,7 @@ export default function AptitudeInfo() {
               <div className="grid md:grid-cols-2 gap-4">
                 {["a", "b", "c", "d"].map((option) => (
                   <div key={option}>
-                    <label className="block mb-2">
-                      Option {option.toUpperCase()}
-                    </label>
+                    <label className="block mb-2">Option {option.toUpperCase()}</label>
                     <input
                       type="text"
                       value={newQuiz[option]}
@@ -291,52 +311,37 @@ export default function AptitudeInfo() {
         )}
 
         {selectedQuizzes.length > 0 && (
-          <div className="mt-6 flex justify-between items-center">
-            <button
-              onClick={() => setShowReviewModal(true)}
-              className="bg-indigo-500 text-white px-6 py-2 rounded hover:bg-indigo-600"
-            >
-              Review Questions ({selectedQuizzes.length})
-            </button>
-            <button
-              onClick={nextRound}
-              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
-            >
-              Next Round
-            </button>
-          </div>
-        )}
-
-        {showReviewModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-              <div className="p-6 border-b flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Selected Questions</h2>
-                <button
-                  onClick={() => setShowReviewModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
+          <div className="mt-6 space-y-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <label className="text-gray-700 font-medium">
+                  Passing Marks:
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max={selectedQuizzes.length}
+                  value={passingMarks}
+                  onChange={(e) =>
+                    setPassingMarks(
+                      Math.min(
+                        Math.max(parseInt(e.target.value, 10), 0),
+                        selectedQuizzes.length
+                      )
+                    )
+                  }
+                  className="border rounded px-2 py-1 w-20"
+                />
+                <span className="text-gray-600 text-sm">
+                  ({passingMarks}/{selectedQuizzes.length})
+                </span>
               </div>
-              <div className="p-6 space-y-4">
-                {selectedQuizzes.map((quiz, index) => (
-                  <div key={quiz.id} className="border p-4 rounded bg-gray-50">
-                    <h3 className="font-semibold mb-2">
-                      Question {index + 1}: {quiz.que}
-                    </h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>A: {quiz.a}</div>
-                      <div>B: {quiz.b}</div>
-                      <div>C: {quiz.c}</div>
-                      <div>D: {quiz.d}</div>
-                    </div>
-                    <div className="mt-2 text-green-600">
-                      Correct Answer: Option {quiz.ans.toUpperCase()}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <button
+                onClick={nextRound}
+                className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+              >
+                Next Round
+              </button>
             </div>
           </div>
         )}

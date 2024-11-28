@@ -17,6 +17,18 @@ const userSchema = new mongoose.Schema({
     type: Array,
     default: [], // Array of tech problems directly
   },
+  aptitudePassingMarks : {
+    type: Number,
+    default: 0
+  },
+  aptitudePassesCandidates: {
+    type: [String], // Array of email strings of users who passed the aptitude test
+    default: [],
+  },
+  aptitudeFailedCandidates: {
+    type: [String], // Array of email strings of users who passed the aptitude test
+    default: [],
+  },
 });
 
 // Use "User" as the model name

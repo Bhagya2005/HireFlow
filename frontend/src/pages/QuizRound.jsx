@@ -40,7 +40,10 @@ const QuizComponent = () => {
     if (candidateExists) {
       try {
         setLoading(true);
-        const response = await axios.get(`${BACKEND_URL}/getQuiz`);
+        const response = await axios.get(`${BACKEND_URL}/getQuiz`, {
+          params: { userId: localStorage.getItem("userId") },
+        });
+        console.log(response);
         setExistingQuizzes(response.data);
         setSubmitted(true);
         setLoading(false);
@@ -71,12 +74,34 @@ const QuizComponent = () => {
     }
   };
 
-  const handleQuizSubmit = () => {
-    // Validate that all questions are answered
-    // have to store in backend and fetch in dashboard the result is stored in score state
-    
-    console.log(`Quiz completed! Your score: ${score}`);
-    setSubmitted(false);
+  const handleQuizSubmit = async () => {
+    // Get userId and email from localStorage or other state
+    const userId = localStorage.getItem("userId");
+    const userEmail = userDetails.email; // Assuming you store email
+
+    // Call the backend to get user info and check aptitudePassingMarks
+    try {
+      const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
+      const user = response.data;
+      const passingMarks = user.aptitudePassingMarks;
+
+      console.log(
+        `User's passing marks: ${passingMarks}, Your score: ${score}`
+      );
+
+      // Add email to aptitudePassesCandidates array if passed
+      const updateResponse = await axios.post(`${BACKEND_URL}/updateUser`, {
+        userId,
+        userEmail,
+        passingMarks : score,
+      });
+      console.log(updateResponse.data); // "User updated successfully"
+
+      console.log(`Quiz completed! Your score: ${score}`);
+      setSubmitted(false);
+    } catch (error) {
+      console.error("Error submitting quiz:", error);
+    }
   };
 
   const renderUserDetailsForm = () => (
@@ -173,7 +198,8 @@ const QuizComponent = () => {
           <button
             onClick={handleQuizSubmit}
             disabled={
-              loading || Object.keys(selectedAnswers).length !== existingQuizzes.length
+              loading ||
+              Object.keys(selectedAnswers).length !== existingQuizzes.length
             }
             className="w-full mt-6 py-3 px-4 bg-green-500 text-white rounded-md hover:bg-green-600 transition duration-300 ease-in-out disabled:opacity-50"
           >

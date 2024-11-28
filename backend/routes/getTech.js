@@ -4,6 +4,8 @@ const User = require("../models/userModel"); // User model to fetch tech problem
 
 router.get("/getTech", async (req, res) => {
   const { userId } = req.query; // Get the userId from query parameters
+  console.log(userId);
+  
 
   try {
     if (userId) {
