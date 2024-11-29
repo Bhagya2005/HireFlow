@@ -84,9 +84,9 @@ export default function AptitudeInfo() {
       });
   };
 
-  const updatePassingMarks = () => {
-    setPassingMarks(Math.ceil(selectedQuizzes.length / 2));
-  };
+  // const updatePassingMarks = () => {
+  //   setPassingMarks(Math.ceil(selectedQuizzes.length / 2));
+  // };
 
   async function nextRound() {
   console.log("Hello :",passingMarks);
@@ -137,17 +137,18 @@ export default function AptitudeInfo() {
 }
 
 
-  const handleExistingQuestionSelect = (quiz) => {
-    setSelectedQuizzes((prevSelectedQuizzes) => {
-      const quizIndex = prevSelectedQuizzes.findIndex((q) => q.id === quiz.id);
-      const updatedQuizzes = quizIndex > -1
-        ? prevSelectedQuizzes.filter((q) => q.id !== quiz.id)
-        : [...prevSelectedQuizzes, quiz];
-      // Update passing marks after selection/deselection
-      updatePassingMarks(updatedQuizzes);
-      return updatedQuizzes;
-    });
-  };
+const handleExistingQuestionSelect = (quiz) => {
+  setSelectedQuizzes((prevSelectedQuizzes) => {
+    const quizIndex = prevSelectedQuizzes.findIndex((q) => q.id === quiz.id);
+    if (quizIndex > -1) {
+      // If quiz is already selected, remove it
+      return prevSelectedQuizzes.filter((q) => q.id !== quiz.id);
+    } else {
+      // If quiz is not selected, add it
+      return [...prevSelectedQuizzes, quiz];
+    }
+  });
+};
   
 
   return (
@@ -229,7 +230,7 @@ export default function AptitudeInfo() {
           <div className="grid md:grid-cols-2 gap-4">
             {existingQuizzes.map((quiz, index) => (
               <div
-                key={`${index}-${Date.now()}`}
+                key={index}
                 onClick={() => handleExistingQuestionSelect(quiz)}
                 className={`cursor-pointer p-4 border rounded-lg transition-all ${
                   selectedQuizzes.some((q) => q.id === quiz.id)

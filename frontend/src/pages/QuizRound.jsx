@@ -1,5 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
+import sendProgressEmail from "../components/NextroundEmail"; // Ensure this path is correct
+import sendRejectionEmail from "../components/RejectionEmail";
 
 const QuizComponent = () => {
   const [userDetails, setUserDetails] = useState({
@@ -17,6 +19,9 @@ const QuizComponent = () => {
   const [existingQuizzes, setExistingQuizzes] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [score, setScore] = useState(0); // Track user's score
+  const [companyName, setCompanyName] = useState(
+    localStorage.getItem("companyName") || ""
+  );
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -75,11 +80,14 @@ const QuizComponent = () => {
   };
 
   const handleQuizSubmit = async () => {
-    // Get userId and email from localStorage or other state
     const userId = localStorage.getItem("userId");
-    const userEmail = userDetails.email; // Assuming you store email
+    const userEmail = userDetails.email; // User's email
 
-    // Call the backend to get user info and check aptitudePassingMarks
+    if (!userEmail) {
+      setError("Email is required to send the rejection email.");
+      return;
+    }
+
     try {
       const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
       const user = response.data;
@@ -89,13 +97,49 @@ const QuizComponent = () => {
         `User's passing marks: ${passingMarks}, Your score: ${score}`
       );
 
-      // Add email to aptitudePassesCandidates array if passed
-      const updateResponse = await axios.post(`${BACKEND_URL}/updateUser`, {
+      // Update backend with quiz results
+      await axios.post(`${BACKEND_URL}/updateUser`, {
         userId,
         userEmail,
-        passingMarks : score,
+        passingMarks: score,
       });
-      console.log(updateResponse.data); // "User updated successfully"
+
+      if (passingMarks <= score) {
+        console.log("USer email : ", userDetails.email);
+        
+        const templateParams = {
+          candidateName: userDetails.name,
+          roundName: "Technical Round",
+          linkForNextRound: "http://localhost:5173/techRound",
+          companyName: companyName,
+          to_email: "tejhagargi9@gmail.com",
+          recipient_address: userDetails.email,
+        };
+
+        try {
+          await sendProgressEmail(templateParams);
+          console.log("Email sent successfully!");
+        } catch (emailError) {
+          console.error("Failed to send email:", emailError);
+        }
+      } else {
+
+        console.log("USer email : ", userDetails.email);
+
+        const templateParams = {
+          candidateName: userDetails.name,
+          roundName: "Technical Round",
+          companyName: companyName,
+          to_email: userDetails.email,
+        };
+
+        try {
+          await sendRejectionEmail(templateParams);
+          console.log("Email sent successfully!");
+        } catch (emailError) {
+          console.error("Failed to send email:", emailError);
+        }
+      }
 
       console.log(`Quiz completed! Your score: ${score}`);
       setSubmitted(false);

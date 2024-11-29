@@ -39,7 +39,6 @@ router.post("/updateUser", async (req, res) => {
     } else {
       user.aptitudeFailedCandidates.push(userEmail); // Add email to failed candidates
     }
-
     if (email) {
       const emailExists = await User.findOne({ email });
       if (emailExists && emailExists._id.toString() !== userId) {
