@@ -101,7 +101,7 @@ const QuizComponent = () => {
       await axios.post(`${BACKEND_URL}/updateUser`, {
         userId,
         userEmail,
-        passingMarks: score,
+        score,
       });
 
       if (passingMarks <= score) {

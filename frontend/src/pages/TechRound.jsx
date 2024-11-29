@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Play,
   AlertCircle,
@@ -43,12 +43,53 @@ const TechRound = () => {
   const [code, setCode] = useState("");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [isSubmitRunning, setSubmitIsRunning] = useState(false);
   const [error, setError] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [techSolvedArr, setTechSolvedArr] = useState([]);
 
   // Store code for each problem separately
   const [codeStore, setCodeStore] = useState({});
+
+  // Real-time code syncing using SSE
+  useEffect(() => {
+    const eventSource = new EventSource(`${BACKEND_URL}/api/events`);
+    eventSource.onmessage = (event) => {
+      const { text: newCode } = JSON.parse(event.data);
+      setCode(newCode);
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, []);
+
+  const updateUser = async () => {
+
+    let userEmail = prompt("Enter ur email");
+    try {
+      const response = await axios.post(
+        `${BACKEND_URL}/updateUser`,
+        {
+          userEmail: userEmail,
+          userId: localStorage.getItem("userId"),
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    } catch (err) {
+      console.error("Error:", err);
+      alert("An error occurred while scheduling the interview");
+    }
+  };
+
+  // Update code in backend on change
+  const handleCodeChange = async (newCode) => {
+    setCode(newCode);
+    await axios.post(`${BACKEND_URL}/api/update`, { text: newCode });
+  };
 
   useEffect(() => {
     const fetchProblems = async () => {
@@ -189,6 +230,45 @@ const TechRound = () => {
 
   const currentProblem = problems[currentProblemIndex];
 
+  const handleSubmit = async () => {
+    setSubmitIsRunning(true);
+    try {
+      const response = await axios.post(`${BACKEND_URL}/checkTechSolution`, {
+        title: currentProblem.title,
+        desc: currentProblem.desc,
+        code: code,
+      });
+
+      if (response.data.success) {
+        setTechSolvedArr((prev) => {
+          if (!prev.includes(currentProblemIndex)) {
+            return [...prev, currentProblemIndex];
+          }
+          return prev;
+        });
+      }
+
+      console.log(techSolvedArr);
+      if (techSolvedArr.length === problems.length) {
+        updateUser();
+      }
+
+      if (response.data) {
+        setOutput(response.data.summary);
+        setError(null);
+      } else {
+        setError(response.data.error);
+        setOutput("");
+      }
+    } catch (error) {
+      console.error(error);
+      setError("An error occurred while executing the code");
+      setOutput("");
+    } finally {
+      setSubmitIsRunning(false);
+    }
+  };
+
   return (
     <div
       className={`min-h-screen min-w-full p-4 flex ${
@@ -308,6 +388,19 @@ const TechRound = () => {
               </select>
 
               <button
+                onClick={handleSubmit}
+                disabled={isSubmitRunning}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
+                  isDarkMode
+                    ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                    : "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                }`}
+              >
+                <Play className="h-4 w-4" />
+                {isSubmitRunning ? "Submitting..." : "Submit"}
+              </button>
+
+              <button
                 onClick={handleRunCode}
                 disabled={isRunning}
                 className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
@@ -330,7 +423,10 @@ const TechRound = () => {
             >
               <textarea
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  handleCodeChange(e.target.value);
+                }}
                 className={`w-full h-full p-4 font-mono text-sm resize-none focus:outline-none bg-transparent ${
                   isDarkMode ? "text-gray-200" : "text-gray-800"
                 }`}
@@ -396,6 +492,10 @@ const TechRound = () => {
                   ? "bg-gray-900/50 border border-gray-700 text-gray-200"
                   : "bg-gray-50 border border-gray-300 text-gray-800"
               }`}
+              style={{
+                whiteSpace: "normal", // Allow wrapping
+                overflowWrap: "break-word", // Break long words if needed
+              }}
             >
               {output || "Run your code to see the output here..."}
             </pre>

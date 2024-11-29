@@ -14,6 +14,14 @@ router.post("/updateUser", async (req, res) => {
     jobrole,
     passingMarks,
     userEmail,
+    aptitudePassingMarks,
+    aptitudePassesCandidates,
+    aptitudeFailedCandidates,
+    techPassesCandidates,
+    techFailedCandidates,
+    aptitudeSolved,
+    techSolved,
+    score,
   } = req.body;
 
   try {
@@ -31,14 +39,27 @@ router.post("/updateUser", async (req, res) => {
     if (startTime) user.startTime = startTime;
     if (endTime) user.endTime = endTime;
 
-    // Check if passingMarks are set and if score meets/exceeds the passingMarks
-    if (passingMarks && user.aptitudePassingMarks <= passingMarks) {
+    // Check if aptitude passingMarks are set and if score meets/exceeds the passingMarks
+    if (score >= user.aptitudePassingMarks) {
       if (!user.aptitudePassesCandidates.includes(userEmail)) {
         user.aptitudePassesCandidates.push(userEmail); // Add email to passed candidates
       }
     } else {
-      user.aptitudeFailedCandidates.push(userEmail); // Add email to failed candidates
+      if (!user.aptitudeFailedCandidates.includes(userEmail)) {
+        user.aptitudeFailedCandidates.push(userEmail); // Add email to failed candidates
+      }
     }
+
+    // Check if tech passingMarks are set and if score meets/exceeds the passingMarks
+    if (!user.techPassesCandidates.includes(userEmail)) {
+      user.techPassesCandidates.push(userEmail); // Add email to passed candidates
+    } else {
+      if (!user.techFailedCandidates.includes(userEmail)) {
+        user.techFailedCandidates.push(userEmail); // Add email to failed candidates
+      }
+    }
+
+    // Update email and check if it already exists
     if (email) {
       const emailExists = await User.findOne({ email });
       if (emailExists && emailExists._id.toString() !== userId) {
@@ -47,6 +68,7 @@ router.post("/updateUser", async (req, res) => {
       user.email = email;
     }
 
+    // Save the updated user
     await user.save();
 
     res.status(200).send("User updated successfully");
