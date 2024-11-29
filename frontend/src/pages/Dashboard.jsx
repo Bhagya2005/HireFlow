@@ -54,10 +54,10 @@ const RecruitmentDashboard = () => {
             `${BACKEND_URL}/getUserInfo/${userId}`
           );
           setfailedCandidates(
-            response.data.aptitudeFailedCandidates || []
+            response.data.techFailedCandidates || []
           );
           setpassedCandidates(
-            response.data.aptitudePassesCandidates || []
+            response.data.techPassesCandidates || []
           );
           setName(response.data.name);
           setComapnyName(response.data.companyName);
