@@ -8,6 +8,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import axios from "axios";
+import sendHREmail from "../components/HRemail";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -68,6 +69,22 @@ const TechRound = () => {
   const updateUser = async () => {
 
     let userEmail = prompt("Enter ur email");
+
+    const templateParams = {
+      jobRole : localStorage.getItem("jobrole"),
+      linkForNextRound: "http://localhost:5173/hrRoundEntrance",
+      companyName: localStorage.getItem("companyName"),
+      to_email: userEmail,
+    };
+
+    try {
+      await sendHREmail(templateParams);
+      console.log("Email sent successfully!");
+    } catch (emailError) {
+      console.error("Failed to send email:", emailError);
+    }
+
+
     try {
       const response = await axios.post(
         `${BACKEND_URL}/updateUser`,
