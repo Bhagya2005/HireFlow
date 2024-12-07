@@ -203,7 +203,7 @@ const CandidateUpload = () => {
                   <thead>
                     <tr className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
                       <th className="border p-3">Name</th>
-                      <th className="border p-3">Email</th>
+                      <th className="border p-3">Email </th>
                     </tr>
                   </thead>
                   <tbody>
