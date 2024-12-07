@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
@@ -11,6 +12,7 @@ const CandidateUpload = () => {
   const [candidateEmails, setCandidateEmails] = useState([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -62,23 +64,36 @@ const CandidateUpload = () => {
     }
   };
 
-  const handleSubmit = () => {
-    //logic to send candidateData to a backend API
-    console.log("Submitting candidate data:", candidateData);
-    console.log("Submitting candidate emails:", candidateEmails);
-    console.log("name with email :", candidateData);
+  const handleSubmit = async () => {
+    try {
+      console.log("Submitting candidate data:", candidateData);
+      console.log("Submitting candidate emails:", candidateEmails);
 
-    localStorage.setItem("candidateEmails", JSON.stringify(candidateEmails));
-    const candidateDataString = JSON.stringify(candidateData);
+      // Store data in localStorage for backup
+      localStorage.setItem("candidateEmails", JSON.stringify(candidateEmails));
+      localStorage.setItem("candidateData", JSON.stringify(candidateData));
 
-    // Store the JSON string in localStorage
-    localStorage.setItem("candidateData", candidateDataString);
+      // Send candidate data to backend API
+      const response = await axios.post(`${BACKEND_URL}/updateUser`, {
+        userId: localStorage.getItem("userId"), // Assume recruiter is logged in and we have their email
+        candidateData, // Send the array of candidate objects
+      });
 
-    setIsSubmitted(true);
-    setUploadStatus("Candidates submitted successfully!");
-    setTimeout(() => {
-      navigate("/roundSelection");
-    }, 1200);
+      if (response.status === 200) {
+        console.log(
+          "Candidates successfully updated in backend:",
+          response.data
+        );
+        setIsSubmitted(true);
+        setUploadStatus("Candidates submitted successfully!");
+        setTimeout(() => {
+          navigate("/roundSelection");
+        }, 1200);
+      }
+    } catch (error) {
+      console.error("Error updating candidates:", error);
+      setUploadStatus("Failed to submit candidates. Please try again.");
+    }
   };
 
   // Pagination

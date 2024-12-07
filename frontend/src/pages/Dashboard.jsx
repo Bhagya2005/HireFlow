@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const RecruitmentDashboard = () => {
   const [activeRound, setActiveRound] = useState("aptitude");
@@ -13,8 +14,9 @@ const RecruitmentDashboard = () => {
   const [companyName, setComapnyName] = useState("");
   const [email, setEmail] = useState("");
 
-  useEffect(() => {
+  const navigate = useNavigate();
 
+  useEffect(() => {
     const ActiveRound = activeRound
 
     if(ActiveRound === "aptitude") {
@@ -95,10 +97,33 @@ const RecruitmentDashboard = () => {
       };
       fetchUserInfo();
     } 
-    
-
-    
   }, [activeRound]);
+
+  const handleLogout = () => {
+    const confirmLogout = window.confirm("Are you sure you want to log out?");
+    
+    if (confirmLogout) {
+      localStorage.removeItem("email");
+      navigate("/");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm("Are you sure you want to delete your account? This action cannot be undone.");
+    
+    if (confirmDelete) {
+      try {
+        const userId = localStorage.getItem("userId");
+        await axios.delete(`${BACKEND_URL}/deleteAccount/${userId}`);
+        localStorage.clear();
+
+        navigate("/");
+      } catch (error) {
+        console.error("Error deleting account:", error);
+        alert("Failed to delete account. Please try again.");
+      }
+    }
+  };
 
   const filteredCandidates = (() => {
     let candidates = AllCandidates;
@@ -186,6 +211,22 @@ const RecruitmentDashboard = () => {
       }`}
           >
             HR Round
+          </button>
+        </div>
+
+        {/* New Logout and Delete Account buttons added at the bottom */}
+        <div className="mt-auto space-y-2 pt-4 border-t border-gray-200">
+          <button
+            onClick={handleLogout}
+            className="w-full py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Logout
+          </button>
+          <button
+            onClick={handleDeleteAccount}
+            className="w-full py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors"
+          >
+            Delete Account
           </button>
         </div>
       </div>
