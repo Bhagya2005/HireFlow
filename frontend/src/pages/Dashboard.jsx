@@ -9,10 +9,31 @@ const RecruitmentDashboard = () => {
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const [failedCandidates, setfailedCandidates] = useState([])
   const [passesCandidates, setpassedCandidates] = useState([])
-  const AllCandidates = JSON.parse(localStorage.getItem("candidateData")) || [];
+  const [candidatesData, setcandidatesData] = useState([])
   const [name, setName] = useState("");
   const [companyName, setComapnyName] = useState("");
   const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+          console.error("No userId found in localStorage.");
+          return;
+        }
+
+        const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
+        console.log("Dashboard data:", response.data);
+        setcandidatesData(response.data.candidateData || []);
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      }
+    };
+
+    fetchUserInfo();
+  }, []); 
+
 
   const navigate = useNavigate();
 
@@ -126,7 +147,7 @@ const RecruitmentDashboard = () => {
   };
 
   const filteredCandidates = (() => {
-    let candidates = AllCandidates;
+    let candidates = candidatesData;
 
     if (filterStatus === "selected") {
       candidates = candidates.filter((candidate) =>

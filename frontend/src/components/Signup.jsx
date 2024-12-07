@@ -22,6 +22,7 @@ const Signup = () => {
       // Handle success
       if (response.status === 200) {
         console.log("Successfully signed up");
+        localStorage.clear()
 
         // Store the returned id and other data in localStorage
         localStorage.setItem("email", email);

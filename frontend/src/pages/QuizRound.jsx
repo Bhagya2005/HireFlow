@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import sendProgressEmail from "../components/NextroundEmail"; // Ensure this path is correct
 import sendRejectionEmail from "../components/RejectionEmail";
 
@@ -22,6 +22,7 @@ const QuizComponent = () => {
   const [companyName, setCompanyName] = useState(
     localStorage.getItem("companyName") || ""
   );
+  const [candidatesEmail, setCandidatesEmails] = useState([])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -31,12 +32,34 @@ const QuizComponent = () => {
     }));
   };
 
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+          console.error("No userId found in localStorage.");
+          return;
+        }
+  
+        const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
+        console.log("Dashboard data:", response.data);
+  
+        // Extract only emails from candidateData
+        const emails = response.data.candidateData?.map((candidate) => candidate.email) || [];
+        setCandidatesEmails(emails); // Assuming you have a state like setCandidatesEmails
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      }
+    };
+  
+    fetchUserInfo();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setScore(0); // Reset score before starting the quiz
 
-    const candidateData =
-      JSON.parse(localStorage.getItem("candidateData")) || [];
+    const candidateData = candidatesEmail
 
     const candidateExists = candidateData.some(
       (candidate) => candidate.email === userDetails.email

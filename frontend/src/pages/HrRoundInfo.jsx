@@ -1,11 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import sendEmail from "../components/email";
+import axios from "axios";
+
 
 export default function HRRoundInfo() {
   const [isInstructionsRead, setIsInstructionsRead] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const navigate = useNavigate();
+  const [candidatesEmail, setCandidatesEmails] = useState([]);
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+
+
 
   const handleProceed = () => {
     if (isInstructionsRead) {
@@ -18,10 +24,32 @@ export default function HRRoundInfo() {
     }
   };
 
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        if (!userId) {
+          console.error("No userId found in localStorage.");
+          return;
+        }
+  
+        const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
+        console.log("Dashboard data:", response.data);
+  
+        // Extract only emails from candidateData
+        const emails = response.data.candidateData?.map((candidate) => candidate.email) || [];
+        setCandidatesEmails(emails); // Assuming you have a state like setCandidatesEmails
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      }
+    };
+  
+    fetchUserInfo();
+  }, []);
+
   const handleSendEmails = async () => {
     // Retrieve candidate data (name and email) from localStorage
-    const candidateData =
-      JSON.parse(localStorage.getItem("candidateData")) || [];
+    const candidateData = candidatesEmail
     const companyName = localStorage.getItem("companyName") || "Your Company";
     const HRemail = localStorage.getItem("email") || "hr@yourcompany.com";
 
