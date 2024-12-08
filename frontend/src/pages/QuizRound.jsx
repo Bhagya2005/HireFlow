@@ -62,7 +62,7 @@ const QuizComponent = () => {
     const candidateData = candidatesEmail
 
     const candidateExists = candidateData.some(
-      (candidate) => candidate.email === userDetails.email
+      (candidate) => candidate === userDetails.email
     );
 
     if (candidateExists) {
