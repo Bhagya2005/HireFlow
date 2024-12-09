@@ -9,7 +9,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 const corsOptions = {
-  origin: [process.env.FRONTEND_URL, "http://localhost:5173"],
+  origin: [
+    process.env.FRONTEND_URL,
+    "http://localhost:5173",
+    "https://smartrecruit.vercel.app",
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization", "multipart/form-data"],
 };
@@ -78,14 +82,16 @@ app.use(checkTechSolution);
 
 // Test route for users
 app.get("/", async (req, res) => {
-  try {
-    const users = await User.find();
-    res.json(users);
-  } catch (error) {
-    res.send("Error, check console");
-    console.error("Error fetching users:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
+  // try {
+  //   const users = await User.find();
+  //   res.json(users);
+  // } catch (error) {
+  //   res.send("Error, check console");
+  //   console.error("Error fetching users:", error);
+  //   res.status(500).json({ error: "Internal Server Error" });
+  // }
+
+  res.send("Hello world");
 });
 
 // Server setup
