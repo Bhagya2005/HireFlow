@@ -82,16 +82,14 @@ app.use(checkTechSolution);
 
 // Test route for users
 app.get("/", async (req, res) => {
-  // try {
-  //   const users = await User.find();
-  //   res.json(users);
-  // } catch (error) {
-  //   res.send("Error, check console");
-  //   console.error("Error fetching users:", error);
-  //   res.status(500).json({ error: "Internal Server Error" });
-  // }
-
-  res.send("Hello world");
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    res.send("Error, check console");
+    console.error("Error fetching users:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 // Server setup
