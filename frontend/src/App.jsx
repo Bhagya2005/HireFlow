@@ -9,7 +9,7 @@ import AptitudeInfo from "./pages/AptitudeInfo";
 import TechnicalInfo from "./pages/TechnicalInfo";
 import HRRoundInfo from "./pages/HrRoundInfo";
 import TechRound from "./pages/TechRound";
-import QuizComponent from "./pages/quizRound";
+import QuizComponent from "./pages/QuizRound";
 import RecruitmentDashboard from "./pages/Dashboard";
 import HRRoundEntrance from "./pages/HRRoundEntrance";
 import HRRound from "./pages/HRRound.jsx";

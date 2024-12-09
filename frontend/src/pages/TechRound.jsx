@@ -67,12 +67,11 @@ const TechRound = () => {
   }, []);
 
   const updateUser = async () => {
-
     let userEmail = prompt("Enter ur email");
 
     const templateParams = {
-      jobRole : localStorage.getItem("jobrole"),
-      linkForNextRound: "http://localhost:5173/hrRoundEntrance",
+      jobRole: localStorage.getItem("jobrole"),
+      linkForNextRound: `${BACKEND_URL}/hrRoundEntrance`,
       companyName: localStorage.getItem("companyName"),
       to_email: userEmail,
     };
@@ -83,7 +82,6 @@ const TechRound = () => {
     } catch (emailError) {
       console.error("Failed to send email:", emailError);
     }
-
 
     try {
       const response = await axios.post(

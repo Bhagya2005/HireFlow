@@ -22,7 +22,7 @@ const QuizComponent = () => {
   const [companyName, setCompanyName] = useState(
     localStorage.getItem("companyName") || ""
   );
-  const [candidatesEmail, setCandidatesEmails] = useState([])
+  const [candidatesEmail, setCandidatesEmails] = useState([]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -40,18 +40,22 @@ const QuizComponent = () => {
           console.error("No userId found in localStorage.");
           return;
         }
-  
-        const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
+
+        const response = await axios.get(
+          `${BACKEND_URL}/getUserInfo/${userId}`
+        );
         console.log("Dashboard data:", response.data);
-  
+
         // Extract only emails from candidateData
-        const emails = response.data.candidateData?.map((candidate) => candidate.email) || [];
+        const emails =
+          response.data.candidateData?.map((candidate) => candidate.email) ||
+          [];
         setCandidatesEmails(emails); // Assuming you have a state like setCandidatesEmails
       } catch (error) {
         console.error("Error fetching user info:", error);
       }
     };
-  
+
     fetchUserInfo();
   }, []);
 
@@ -59,7 +63,7 @@ const QuizComponent = () => {
     e.preventDefault();
     setScore(0); // Reset score before starting the quiz
 
-    const candidateData = candidatesEmail
+    const candidateData = candidatesEmail;
 
     const candidateExists = candidateData.some(
       (candidate) => candidate === userDetails.email
@@ -129,11 +133,11 @@ const QuizComponent = () => {
 
       if (passingMarks <= score) {
         console.log("USer email : ", userDetails.email);
-        
+
         const templateParams = {
           candidateName: userDetails.name,
           roundName: "Technical Round",
-          linkForNextRound: "http://localhost:5173/techRound",
+          linkForNextRound: `${BACKEND_URL}/techRound`,
           companyName: companyName,
           to_email: "tejhagargi9@gmail.com",
           recipient_address: userDetails.email,
@@ -146,7 +150,6 @@ const QuizComponent = () => {
           console.error("Failed to send email:", emailError);
         }
       } else {
-
         console.log("USer email : ", userDetails.email);
 
         const templateParams = {
