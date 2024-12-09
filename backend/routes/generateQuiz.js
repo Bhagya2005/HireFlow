@@ -21,8 +21,11 @@ Return the quiz as an array of objects in JSON format, where each object contain
 `;
 
 router.get("/generateQuiz", async (req, res) => {
+  console.log("Generating file");
   const { GoogleGenerativeAI } = require("@google/generative-ai");
   const genAI = new GoogleGenerativeAI(process.env.GEN_AI_API_KEY);
+
+  console.log("APi: ", process.env.GEN_AI_API_KEY);
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -31,6 +34,8 @@ router.get("/generateQuiz", async (req, res) => {
 
     const cleanedResponse = rawResponse.slice(7, -4).trim();
     const responseText = JSON.parse(cleanedResponse);
+
+    console.log("Generated: ", responseText);
 
     res.status(200).json(responseText); // Send the parsed JSON to the frontend
   } catch (error) {

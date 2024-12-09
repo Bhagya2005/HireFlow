@@ -65,7 +65,7 @@ export default function AptitudeInfo() {
       .catch((error) => {
         console.error("Error fetching quizzes:", error);
         setLoader(false);
-        console.log("Error in generating");
+        console.log("Error in generating", error);
       });
   };
 
@@ -89,67 +89,64 @@ export default function AptitudeInfo() {
   // };
 
   async function nextRound() {
-  console.log("Hello :",passingMarks);
-   // or however you're calculating passingMarks
-  console.log("Passing marks of aptitude: ", passingMarks);
+    console.log("Hello :", passingMarks);
+    // or however you're calculating passingMarks
+    console.log("Passing marks of aptitude: ", passingMarks);
 
-  // Ensure userId exists in localStorage
-  const userID = localStorage.getItem("userId");
+    // Ensure userId exists in localStorage
+    const userID = localStorage.getItem("userId");
 
-  if (!userID) {
-    console.error("User ID not found in localStorage");
-    return;
-  }
-
-  try {
-    // Make sure to await the response from the backend API call
-    const response = await axios.post(`${BACKEND_URL}/updateUser`, {
-      userId: userID,
-      passingMarks
-    });
-    console.log(response.data); // "User updated successfully"
-
-    // Navigate based on round completion status
-    const isTechnical = localStorage.getItem("technical");
-    const isHr = localStorage.getItem("hrRound");
-    
-    if (isTechnical === "true") {
-      navigate("/technicalInfo");
-    } else if (isHr === "true") {
-      navigate("/hrInfo");
-    } else {
-      navigate("/dashboard");
+    if (!userID) {
+      console.error("User ID not found in localStorage");
+      return;
     }
 
-    console.log("Selected Quizzes: ", selectedQuizzes);
+    try {
+      // Make sure to await the response from the backend API call
+      const response = await axios.post(`${BACKEND_URL}/updateUser`, {
+        userId: userID,
+        passingMarks,
+      });
+      console.log(response.data); // "User updated successfully"
 
-    // Add the quizzes with passing marks
-    const quizResponse = await axios.post(`${BACKEND_URL}/addQuiz`, {
-      questions: selectedQuizzes,
-      userId: userID,
-      passingMarks
-    });
-    console.log(quizResponse.data);
+      // Navigate based on round completion status
+      const isTechnical = localStorage.getItem("technical");
+      const isHr = localStorage.getItem("hrRound");
 
-  } catch (error) {
-    console.error("Error updating user or adding quiz:", error);
-  }
-}
+      if (isTechnical === "true") {
+        navigate("/technicalInfo");
+      } else if (isHr === "true") {
+        navigate("/hrInfo");
+      } else {
+        navigate("/dashboard");
+      }
 
+      console.log("Selected Quizzes: ", selectedQuizzes);
 
-const handleExistingQuestionSelect = (quiz) => {
-  setSelectedQuizzes((prevSelectedQuizzes) => {
-    const quizIndex = prevSelectedQuizzes.findIndex((q) => q.id === quiz.id);
-    if (quizIndex > -1) {
-      // If quiz is already selected, remove it
-      return prevSelectedQuizzes.filter((q) => q.id !== quiz.id);
-    } else {
-      // If quiz is not selected, add it
-      return [...prevSelectedQuizzes, quiz];
+      // Add the quizzes with passing marks
+      const quizResponse = await axios.post(`${BACKEND_URL}/addQuiz`, {
+        questions: selectedQuizzes,
+        userId: userID,
+        passingMarks,
+      });
+      console.log(quizResponse.data);
+    } catch (error) {
+      console.error("Error updating user or adding quiz:", error);
     }
-  });
-};
-  
+  }
+
+  const handleExistingQuestionSelect = (quiz) => {
+    setSelectedQuizzes((prevSelectedQuizzes) => {
+      const quizIndex = prevSelectedQuizzes.findIndex((q) => q.id === quiz.id);
+      if (quizIndex > -1) {
+        // If quiz is already selected, remove it
+        return prevSelectedQuizzes.filter((q) => q.id !== quiz.id);
+      } else {
+        // If quiz is not selected, add it
+        return [...prevSelectedQuizzes, quiz];
+      }
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -271,7 +268,9 @@ const handleExistingQuestionSelect = (quiz) => {
               <div className="grid md:grid-cols-2 gap-4">
                 {["a", "b", "c", "d"].map((option) => (
                   <div key={option}>
-                    <label className="block mb-2">Option {option.toUpperCase()}</label>
+                    <label className="block mb-2">
+                      Option {option.toUpperCase()}
+                    </label>
                     <input
                       type="text"
                       value={newQuiz[option]}
