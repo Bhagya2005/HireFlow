@@ -6,6 +6,8 @@ const User = require("../models/userModel");
 router.post("/signup", async (req, res) => {
   const { name, email, password } = req.body;
 
+  console.log("From backend: ", name, email, password);
+
   try {
     const existingUser = await User.findOne({ email });
     if (existingUser) {
