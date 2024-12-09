@@ -78,8 +78,10 @@ app.use(checkTechSolution);
 
 // Test route for users
 app.get("/", async (req, res) => {
-  const users = await User.find();
-  res.json(users);
+  // const users = await User.find();
+  // res.json(users);
+
+  res.send("Hello World");
 });
 
 // Server setup
