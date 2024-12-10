@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useRef, useEffect, useState } from "react";
-import sendProgressEmail from "../components/NextroundEmail"; // Ensure this path is correct
+import sendProgressEmail from "../components/NextroundEmail";
 import sendRejectionEmail from "../components/RejectionEmail";
 import "../index.css";
 import * as faceapi from "face-api.js";
@@ -20,7 +20,7 @@ const QuizComponent = () => {
 
   const [existingQuizzes, setExistingQuizzes] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [score, setScore] = useState(0); // Track user's score
+  const [score, setScore] = useState(0);
   const [companyName, setCompanyName] = useState(
     localStorage.getItem("companyName") || ""
   );
@@ -30,6 +30,7 @@ const QuizComponent = () => {
   const canvasRef = useRef();
   const [screenshot, setScreenshot] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [cheatComment, setCheatComment] = useState("");
 
   useEffect(() => {
     startVideo();
@@ -50,9 +51,9 @@ const QuizComponent = () => {
   const loadModels = () => {
     Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
-      faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
-      faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
-      faceapi.nets.faceExpressionNet.loadFromUri("/models"),
+      // faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
+      // faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
+      // faceapi.nets.faceExpressionNet.loadFromUri("/models"),
     ]).then(() => {
       detectFaces();
     });
@@ -73,10 +74,13 @@ const QuizComponent = () => {
     const canvas = canvasRef.current;
 
     const updateDetections = async () => {
-      const detections = await faceapi
-        .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks()
-        .withFaceExpressions();
+      const detections = await faceapi.detectAllFaces(
+        video,
+        new faceapi.TinyFaceDetectorOptions({
+          inputSize: 512,
+          scoreThreshold: 0.5,
+        }) // Adjust settings as needed
+      );
 
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -92,21 +96,36 @@ const QuizComponent = () => {
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      faceapi.draw.drawDetections(canvas, resizedDetections);
-      faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-      faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
+      // Draw circles for each detected face
+      resizedDetections.forEach((detection) => {
+        const { x, y, width, height } = detection.box;
+        const centerX = x + width / 2;
+        const centerY = y + height / 2;
+        const radius = Math.max(width, height) / 2;
 
-      // Take screenshot if two faces are detected
-      if (detections.length === 2 && !isModalOpen) {
-        const screenshotData = takeScreenshot();
-        setScreenshot(screenshotData); // Save the screenshot
-        setIsModalOpen(true); // Open modal
-      }
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = "red"; // Customize circle color
+        ctx.lineWidth = 3; // Customize circle thickness
+        ctx.stroke();
+      });
     };
 
     video.addEventListener("play", () => {
-      setInterval(updateDetections, 2000);
+      setInterval(updateDetections, 200);
     });
+  };
+
+  const handleManualTrigger = () => {
+    const screenshotData = takeScreenshot();
+    setScreenshot(screenshotData);
+    setIsModalOpen(true);
+  };
+
+  const handleCheatModalSubmit = () => {
+    console.log("Cheat Comment:", cheatComment);
+    setCheatComment("");
+    setIsModalOpen(false);
   };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -366,25 +385,87 @@ const QuizComponent = () => {
       )}
     </div>
   );
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 p-4">
-      <div className="app-container">
-        <video ref={videoRef} autoPlay muted className="video-feed"></video>
-        <canvas ref={canvasRef} className="overlay-canvas"></canvas>
+    <div className="min-h-screen flex relative bg-gradient-to-br from-gray-100 to-gray-200 p-4">
+      {/* Fixed Video Stream Container */}
+      <div className="fixed top-4 right-4 z-50 flex flex-col  items-center">
+        <div className="relative mr-4">
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            className="w-64 h-48 object-cover rounded-lg border-2 border-white shadow-lg"
+          />
+          <canvas
+            ref={canvasRef}
+            className="absolute top-0 left-0 w-full h-full pointer-events-none"
+          />
+        </div>
 
-        {/* Modal for displaying screenshot */}
+        {/* Manual Trigger Button */}
+        <button
+          onClick={handleManualTrigger}
+          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+        >
+          Trigger Cheat Detection
+        </button>
+      </div>
+
+      {/* Main Content Container */}
+      <div className="w-full max-w-4xl mx-auto relative z-10">
+        {/* Modal for displaying screenshot and cheat comment */}
         {isModalOpen && (
-          <div className="modal">
-            <div className="modal-content">
-              <h2>Screenshot Captured</h2>
-              <img src={screenshot} alt="Screenshot" />
-              <button onClick={() => setIsModalOpen(false)}>Close</button>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[1000]">
+            <div className="bg-white p-8 rounded-lg w-96 max-w-md relative">
+              {/* Close button positioned outside and to the top-right */}
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute -top-3 -right-3 bg-white rounded-full shadow-lg p-2 hover:bg-gray-100 transition"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-gray-600"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+
+              <h2 className="text-xl font-bold mb-4 text-center">
+                Potential Cheating Detected
+              </h2>
+              <img
+                src={screenshot}
+                alt="Screenshot"
+                className="w-full rounded-lg mb-4"
+              />
+              <textarea
+                value={cheatComment}
+                onChange={(e) => setCheatComment(e.target.value)}
+                placeholder="Want to say anything about this cheating?"
+                className="w-full p-2 border rounded-lg mb-4 h-24 resize-none"
+              />
+              <button
+                onClick={handleCheatModalSubmit}
+                className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              >
+                Submit
+              </button>
             </div>
           </div>
         )}
+
+        {/* Existing Quiz Content */}
+        {!submitted ? renderUserDetailsForm() : renderQuizzes()}
       </div>
-      {!submitted ? renderUserDetailsForm() : renderQuizzes()}
     </div>
   );
 };
