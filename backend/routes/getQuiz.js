@@ -21,9 +21,13 @@ router.get("/getQuiz", async (req, res) => {
       quizzes = await Quiz.find();
     }
 
+    console.log("backend Quiz response : ", quizzes);
+    
+
     // Map through quizzes if they exist
     const modifiedQuizzes = quizzes?.map((quiz) => {
       quiz.id = quiz._id;
+      
       return quiz;
     });
 
