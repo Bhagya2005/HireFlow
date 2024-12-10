@@ -79,7 +79,7 @@ const QuizComponent = () => {
         new faceapi.TinyFaceDetectorOptions({
           inputSize: 512,
           scoreThreshold: 0.5,
-        }) // Adjust settings as needed
+        })
       );
 
       canvas.width = video.videoWidth;
@@ -105,14 +105,21 @@ const QuizComponent = () => {
 
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-        ctx.strokeStyle = "red"; // Customize circle color
-        ctx.lineWidth = 3; // Customize circle thickness
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 3;
         ctx.stroke();
       });
+
+      // Trigger cheating modal if two or more faces are detected
+      if (detections.length >= 2 && !isModalOpen) {
+        const screenshotData = takeScreenshot();
+        setScreenshot(screenshotData);
+        setIsModalOpen(true);
+      }
     };
 
     video.addEventListener("play", () => {
-      setInterval(updateDetections, 200);
+      setInterval(updateDetections, 1000);
     });
   };
 
