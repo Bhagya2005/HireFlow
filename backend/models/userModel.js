@@ -37,6 +37,15 @@ const userSchema = new mongoose.Schema({
     type: [String], // Array of email strings of users who passed the aptitude test
     default: [],
   },
+  candidateData: {
+    type: [
+      {
+        name: { type: String, required: true }, // Candidate's name
+        email: { type: String, required: true, unique: true }, // Candidate's email
+      },
+    ],
+    default: [],
+  },
 });
 
 // Use "User" as the model name

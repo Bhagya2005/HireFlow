@@ -70,8 +70,8 @@ const CandidateUpload = () => {
       console.log("Submitting candidate emails:", candidateEmails);
 
       // Store data in localStorage for backup
-      localStorage.setItem("candidateEmails", JSON.stringify(candidateEmails));
-      localStorage.setItem("candidateData", JSON.stringify(candidateData));
+      // localStorage.setItem("candidateEmails", JSON.stringify(candidateEmails));
+      // localStorage.setItem("candidateData", JSON.stringify(candidateData));
 
       // Send candidate data to backend API
       const response = await axios.post(`${BACKEND_URL}/updateUser`, {
