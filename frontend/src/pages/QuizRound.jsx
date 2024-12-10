@@ -1,7 +1,9 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import sendProgressEmail from "../components/NextroundEmail"; // Ensure this path is correct
 import sendRejectionEmail from "../components/RejectionEmail";
+import "../index.css";
+import * as faceapi from "face-api.js";
 
 const QuizComponent = () => {
   const [userDetails, setUserDetails] = useState({
@@ -24,6 +26,88 @@ const QuizComponent = () => {
   );
   const [candidatesEmail, setCandidatesEmails] = useState([]);
 
+  const videoRef = useRef();
+  const canvasRef = useRef();
+  const [screenshot, setScreenshot] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    startVideo();
+    loadModels();
+  }, []);
+
+  const startVideo = () => {
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((currentStream) => {
+        videoRef.current.srcObject = currentStream;
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  };
+
+  const loadModels = () => {
+    Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
+      faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
+      faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
+      faceapi.nets.faceExpressionNet.loadFromUri("/models"),
+    ]).then(() => {
+      detectFaces();
+    });
+  };
+
+  const takeScreenshot = () => {
+    const video = videoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL("image/png");
+  };
+
+  const detectFaces = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+
+    const updateDetections = async () => {
+      const detections = await faceapi
+        .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks()
+        .withFaceExpressions();
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const displaySize = {
+        width: video.videoWidth,
+        height: video.videoHeight,
+      };
+      faceapi.matchDimensions(canvas, displaySize);
+
+      const resizedDetections = faceapi.resizeResults(detections, displaySize);
+
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      faceapi.draw.drawDetections(canvas, resizedDetections);
+      faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+      faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
+
+      // Take screenshot if two faces are detected
+      if (detections.length === 2 && !isModalOpen) {
+        const screenshotData = takeScreenshot();
+        setScreenshot(screenshotData); // Save the screenshot
+        setIsModalOpen(true); // Open modal
+      }
+    };
+
+    video.addEventListener("play", () => {
+      setInterval(updateDetections, 2000);
+    });
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUserDetails((prev) => ({
@@ -69,7 +153,8 @@ const QuizComponent = () => {
       (candidate) => candidate === userDetails.email
     );
 
-    if (candidateExists) {
+    // if (candidateExists) {
+    if (true) {
       try {
         setLoading(true);
         const response = await axios.get(`${BACKEND_URL}/getQuiz`, {
@@ -284,6 +369,21 @@ const QuizComponent = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 p-4">
+      <div className="app-container">
+        <video ref={videoRef} autoPlay muted className="video-feed"></video>
+        <canvas ref={canvasRef} className="overlay-canvas"></canvas>
+
+        {/* Modal for displaying screenshot */}
+        {isModalOpen && (
+          <div className="modal">
+            <div className="modal-content">
+              <h2>Screenshot Captured</h2>
+              <img src={screenshot} alt="Screenshot" />
+              <button onClick={() => setIsModalOpen(false)}>Close</button>
+            </div>
+          </div>
+        )}
+      </div>
       {!submitted ? renderUserDetailsForm() : renderQuizzes()}
     </div>
   );
