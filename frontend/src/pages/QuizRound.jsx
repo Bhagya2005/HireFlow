@@ -6,10 +6,9 @@ import "../index.css";
 import * as faceapi from "face-api.js";
 
 const QuizComponent = () => {
-  const [userDetails, setUserDetails] = useState({
-    name: "",
-    email: "",
-  });
+  const [userid, setuserid] = useState("")
+  const [email, setemail] = useState("")
+  const [name, setName] = useState("")
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -134,13 +133,6 @@ const QuizComponent = () => {
     setCheatComment("");
     setIsModalOpen(false);
   };
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setUserDetails((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -176,26 +168,27 @@ const QuizComponent = () => {
     const candidateData = candidatesEmail;
 
     const candidateExists = candidateData.some(
-      (candidate) => candidate === userDetails.email
+      (candidate) => candidate === email
     );
 
-    // if (candidateExists) {
-    if (true) {
-      try {
-        setLoading(true);
-        const response = await axios.get(`${BACKEND_URL}/getQuiz`, {
-          params: { userId: localStorage.getItem("userId") },
-        });
-        console.log(response);
-        setExistingQuizzes(response.data);
-        setSubmitted(true);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch quiz. Please try again.", err);
-        setLoading(false);
+    if (candidateExists) {
+      if (true) {
+        try {
+          setLoading(true);
+          const response = await axios.get(`${BACKEND_URL}/getQuiz`, {
+            params: { userId: userid },
+          });
+          console.log("Quiz Responses : ", response);
+          setExistingQuizzes(response.data);
+          setSubmitted(true);
+          setLoading(false);
+        } catch (err) {
+          setError("Failed to fetch quiz. Please try again.", err);
+          setLoading(false);
+        }
+      } else {
+        setErrors({ email: "This email is not registered in candidate data." });
       }
-    } else {
-      setErrors({ email: "This email is not registered in candidate data." });
     }
   };
 
@@ -219,7 +212,7 @@ const QuizComponent = () => {
 
   const handleQuizSubmit = async () => {
     const userId = localStorage.getItem("userId");
-    const userEmail = userDetails.email; // User's email
+    const userEmail = email; // User's email
 
     if (!userEmail) {
       setError("Email is required to send the rejection email.");
@@ -243,15 +236,15 @@ const QuizComponent = () => {
       });
 
       if (passingMarks <= score) {
-        console.log("USer email : ", userDetails.email);
+        console.log("USer email : ", email);
 
         const templateParams = {
-          candidateName: userDetails.name,
+          candidateName: name,
           roundName: "Technical Round",
           linkForNextRound: `${BACKEND_URL}/techRound`,
           companyName: companyName,
           to_email: "tejhagargi9@gmail.com",
-          recipient_address: userDetails.email,
+          recipient_address: email,
         };
 
         try {
@@ -261,13 +254,13 @@ const QuizComponent = () => {
           console.error("Failed to send email:", emailError);
         }
       } else {
-        console.log("USer email : ", userDetails.email);
+        console.log("USer email : ", email);
 
         const templateParams = {
-          candidateName: userDetails.name,
+          candidateName: name,
           roundName: "Technical Round",
           companyName: companyName,
-          to_email: userDetails.email,
+          to_email: email,
         };
 
         try {
@@ -291,13 +284,13 @@ const QuizComponent = () => {
         Enter Your Details
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
+      <div>
           <input
             type="text"
             name="name"
-            placeholder="Your Name"
-            value={userDetails.name}
-            onChange={handleInputChange}
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
               errors.name
                 ? "border-red-500 focus:ring-red-300"
@@ -310,11 +303,28 @@ const QuizComponent = () => {
         </div>
         <div>
           <input
+            type="text"
+            name="name"
+            placeholder="User id"
+            value={userid}
+            onChange={(e) => setuserid(e.target.value)}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+              errors.name
+                ? "border-red-500 focus:ring-red-300"
+                : "border-gray-300 focus:ring-blue-300"
+            }`}
+          />
+          {errors.userid && (
+            <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+          )}
+        </div>
+        <div>
+          <input
             type="email"
             name="email"
             placeholder="Your Email"
-            value={userDetails.email}
-            onChange={handleInputChange}
+            value={email}
+            onChange={(e) => setemail(e.target.value)}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
               errors.email
                 ? "border-red-500 focus:ring-red-300"

@@ -84,6 +84,7 @@ export default function HRRoundInfo() {
   
         const templateParams = {
           candidateName: "Candidate", // Since you only have emails, use a generic name
+          user_id: localStorage.getItem("userId"),
           companyName,
           dateAndTime: "12th Dec 2024, 10:00 AM", // Example date and time
           duration: duration || "60", // Use duration from localStorage, or fallback to 60 minutes
