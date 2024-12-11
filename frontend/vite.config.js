@@ -6,11 +6,6 @@ import tsconfigPaths from "vite-tsconfig-paths";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
-  build: {
-    rollupOptions: {
-      external: ["face-api.js"],
-    },
-  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
