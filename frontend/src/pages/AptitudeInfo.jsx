@@ -153,12 +153,12 @@ export default function AptitudeInfo() {
   };
 
   const generateQuiz = () => {
-    if (!quizGenerationType) {
-      alert(
-        "Please specify the type of aptitude questions you want to generate."
-      );
-      return;
-    }
+    // if (!quizGenerationType) {
+    //   alert(
+    //     "Please specify the type of aptitude questions you want to generate."
+    //   );
+    //   return;
+    // }
 
     setLoader(true);
     axios
@@ -419,23 +419,25 @@ export default function AptitudeInfo() {
             />
           </div>
 
-          {["a", "b", "c", "d"].map((option) => (
-            <div key={option}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Option {option.toUpperCase()}
-              </label>
-              <input
-                type="text"
-                value={newQuiz[option]}
-                onChange={(e) =>
-                  setNewQuiz({ ...newQuiz, [option]: e.target.value })
-                }
-                placeholder={`Enter option ${option.toUpperCase()}`}
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-          ))}
+          <div className="grid grid-cols-2 gap-4">
+            {["a", "b", "c", "d"].map((option) => (
+              <div key={option}>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Option {option.toUpperCase()}
+                </label>
+                <input
+                  type="text"
+                  value={newQuiz[option]}
+                  onChange={(e) =>
+                    setNewQuiz({ ...newQuiz, [option]: e.target.value })
+                  }
+                  placeholder={`Enter option ${option.toUpperCase()}`}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+            ))}
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -7,7 +7,7 @@ Generate an aptitude quiz with 10 questions. Each question should have:
 - A question text.
 - 4 options labeled A, B, C, and D.
 - The correct answer.
-- Questions on aptitude including logical reasoning, problem solving, and critical thinking.
+- Questions on {{quizType}}
 Return the quiz as an array of objects in JSON format, where each object contains:
 {
   "id": "a very unique id (not serializable)",
@@ -21,12 +21,19 @@ Return the quiz as an array of objects in JSON format, where each object contain
 `;
 
 router.get("/generateQuiz", async (req, res) => {
+  let quizType = req.query.quizType;
+  if (!quizType || quizType === null || quizType === "") {
+    quizType =
+      "aptitude including logical reasoning, problem solving, and critical thinking.";
+  }
+
   const { GoogleGenerativeAI } = require("@google/generative-ai");
   const genAI = new GoogleGenerativeAI(process.env.GEN_AI_API_KEY);
 
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(addOnPrompt);
+    const typeAddOnPrompt = addOnPrompt.replace("{{quizType}}", quizType);
+    const result = await model.generateContent(typeAddOnPrompt);
     const rawResponse = await result.response.text(); // Get the raw response text
 
     const cleanedResponse = rawResponse.slice(7, -4).trim();
