@@ -3,7 +3,7 @@ const router = express.Router();
 require("dotenv").config();
 
 const addOnPrompt = `
-Generate a set of 10 technical interview questions on {{techType}} DSA problems. Each problem should include:
+Generate a set of 6 technical interview questions on {{techType}} DSA problems. Each problem should include:
 - A unique ID for the problem (not serializable).
 - A title describing the problem.
 - A detailed description of the problem, including:
@@ -25,6 +25,7 @@ Return the set of problems as an array of objects in JSON format, where each obj
 
 router.get("/generateTech", async (req, res) => {
   const techType = req.query.techType;
+  console.log("techType: ", techType);
   const { GoogleGenerativeAI } = require("@google/generative-ai");
   const genAI = new GoogleGenerativeAI(process.env.GEN_AI_API_KEY);
 
@@ -37,6 +38,7 @@ router.get("/generateTech", async (req, res) => {
     const cleanedResponse = rawResponse.slice(7, -4).trim();
     const responseText = JSON.parse(cleanedResponse);
 
+    console.log("responseText: ", responseText);
     res.status(200).json(responseText); // Send the parsed JSON to the frontend
   } catch (error) {
     console.error("Error generating tech quiz:", error);
