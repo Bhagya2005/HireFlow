@@ -9,6 +9,7 @@ router.post("/addTech", async (req, res) => {
   try {
     // Map incoming problems to the appropriate format for the Tech model
     const techEntries = problems.map((problem) => ({
+      id: problem.id,
       title: problem.title,
       desc: problem.desc,
     }));
@@ -18,6 +19,7 @@ router.post("/addTech", async (req, res) => {
 
     // Now, store the problems directly in the User model's `allTechProblems` array
     const techProblemData = savedTechEntries.map((entry) => ({
+      id: entry._id.toString(),
       title: entry.title,
       desc: entry.desc,
     }));

@@ -1,4 +1,14 @@
-import { useState } from "react";
+import axios from "axios";
+import {
+  BookOpen,
+  ChevronRight,
+  Code,
+  Edit,
+  EyeOff,
+  Loader2,
+  RefreshCcw,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function TechnicalInfo() {
   const [showPreGenerated, setShowPreGenerated] = useState(false);
@@ -7,17 +17,44 @@ export default function TechnicalInfo() {
   const [selectedProblems, setSelectedProblems] = useState([]);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [loader, setLoader] = useState(false);
+  const [passingMarks, setPassingMarks] = useState(0);
+  const [techInputField, setTechInputField] = useState(false);
+  const [techGenerationType, setTechGenerationType] = useState("");
+  const [generatedProblems, setGeneratedProblems] = useState([]);
+  const [showGeneratedProblems, setShowGeneratedProblems] = useState(false);
 
   const [preGeneratedProblems, setPreGeneratedProblems] = useState([]);
   const [existingProblems, setExistingProblems] = useState([]);
   const [newProblem, setNewProblem] = useState({
     title: "",
     desc: "",
-    expectedSolution: "",
   });
+
+  const [problemsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const indexOfLastQuiz = currentPage * problemsPerPage;
+  const indexOfFirstQuiz = indexOfLastQuiz - problemsPerPage;
+  const currentExistingProblems = existingProblems
+    ? existingProblems.slice(indexOfFirstQuiz, indexOfLastQuiz)
+    : [];
+  const totalPages = existingProblems
+    ? Math.ceil(existingProblems.length / problemsPerPage)
+    : 0;
 
   // Simulated backend URL (replace with actual backend)
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   const handlePreGeneratedSelect = (problem) => {
     setSelectedProblems((prevSelectedProblems) => {
@@ -40,7 +77,6 @@ export default function TechnicalInfo() {
     setNewProblem({
       title: "",
       desc: "",
-      expectedSolution: "",
     });
   };
 
@@ -58,17 +94,22 @@ export default function TechnicalInfo() {
   const generateTechnicalProblems = () => {
     setLoader(true);
     // Simulated fetch
-    fetch(`${BACKEND_URL}/generateTech`)
-      .then((response) => response.json())
-      .then((data) => {
-        setPreGeneratedProblems(data);
+    console.log("techGenerationType: ", techGenerationType);
+    axios
+      .get(`${BACKEND_URL}/generateTech`, {
+        params: { techType: techGenerationType },
+      })
+      .then((response) => {
+        // Directly use the response data as axios already parses it
+        console.log(response);
+        setShowGeneratedProblems(true);
+        setGeneratedProblems(response.data);
         setLoader(false);
       })
       .catch((error) => {
         console.error("Error fetching technical problems:", error);
         setLoader(false);
-
-        setPreGeneratedProblems([]);
+        setGeneratedProblems([]);
       });
   };
 
@@ -78,6 +119,7 @@ export default function TechnicalInfo() {
     fetch(`${BACKEND_URL}/getTech`)
       .then((response) => response.json())
       .then((data) => {
+        console.log(data.techEntries);
         setExistingProblems(data.techEntries);
         setLoader(false);
       })
@@ -136,51 +178,120 @@ export default function TechnicalInfo() {
     }
   };
 
+  useEffect(() => {
+    setPassingMarks(Math.ceil(selectedProblems.length / 2));
+  }, [selectedProblems.length]);
+
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8 text-gray-800 text-center">
-          Technical Interview Problems
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 p-8">
+      <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-lg p-8">
+        <h1 className="text-4xl font-extrabold mb-8 text-gray-800 text-center flex items-center justify-center">
+          <Code className="mr-3 text-blue-500" size={36} />
+          Technical Question Hub
         </h1>
 
         <div className="flex gap-4 justify-center mb-8">
           <button
             onClick={() => {
-              setShowPreGenerated(true);
+              setTechInputField(true);
+              setShowPreGenerated(false);
               setShowManualForm(false);
               setShowExistingProblems(false);
-              generateTechnicalProblems();
             }}
-            className="py-4 px-8 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-all"
+            className="flex items-center py-3 px-6 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-all group"
           >
+            <RefreshCcw className="mr-2 group-hover:animate-spin" size={18} />
             Generate New Problems
           </button>
+
           <button
             onClick={() => {
+              setTechInputField(false);
               setShowManualForm(true);
               setShowPreGenerated(false);
               setShowExistingProblems(false);
+              setShowGeneratedProblems(false);
             }}
-            className="py-4 px-8 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-all"
+            className="flex items-center py-3 px-6 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-all"
           >
+            <Edit className="mr-2" size={18} />
             Create Problem Manually
           </button>
           <button
             onClick={() => {
+              setTechInputField(false);
               setShowExistingProblems(true);
               setShowPreGenerated(false);
               getAlreadyGeneratedProblems();
               setShowManualForm(false);
+              setShowGeneratedProblems(false);
             }}
-            className="py-4 px-8 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-all"
+            className="flex items-center py-3 px-6 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition-all"
           >
+            <BookOpen className="mr-2" size={18} />
             View Existing Problems
           </button>
         </div>
 
+        {techInputField && (
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Specify technical Question Type
+            </label>
+            <div className="flex">
+              <input
+                type="text"
+                value={techGenerationType}
+                onChange={(e) => setTechGenerationType(e.target.value)}
+                placeholder="e.g., Arrays, Linked Lists, Easy, Difficult etc."
+                className="flex-grow p-3 border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={() => {
+                  generateTechnicalProblems();
+                  setShowManualForm(false);
+                  setShowExistingProblems(false);
+                }}
+                className="bg-blue-500 text-white px-6 rounded-r-lg hover:bg-blue-600 transition-all"
+              >
+                Generate
+              </button>
+            </div>
+          </div>
+        )}
+
         {loader && (
           <div className="flex justify-center items-center my-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500"></div>
+            <Loader2 className="animate-spin text-blue-500" size={48} />
+          </div>
+        )}
+
+        {showGeneratedProblems && !loader && (
+          <div className="grid md:grid-cols-2 gap-4">
+            {generatedProblems.map((problem) => (
+              <div
+                key={problem.id}
+                onClick={() => handlePreGeneratedSelect(problem)}
+                className={`
+                  cursor-pointer p-4 border rounded-lg transition-all 
+                  ${
+                    selectedProblems.some((p) => p.id === problem.id)
+                      ? "bg-blue-100 border-blue-500"
+                      : "bg-white hover:bg-gray-50"
+                  }
+                `}
+              >
+                <h3 className="font-semibold mb-2">{problem.title}</h3>
+                <p className="text-sm mb-2 text-gray-600 whitespace-pre-wrap">
+                  {problem.desc.length > 200
+                    ? `${problem.desc.substring(0, 200)}...`
+                    : problem.desc}
+                </p>
+                {selectedProblems.some((p) => p.id === problem.id) && (
+                  <div className="mt-2 text-green-600 text-sm">✓ Selected</div>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
@@ -214,12 +325,13 @@ export default function TechnicalInfo() {
         )}
 
         {showExistingProblems && !loader && (
-          <div className="grid md:grid-cols-2 gap-4">
-            {existingProblems.map((problem, index) => (
-              <div
-                key={`${problem.id}-${index}`}
-                onClick={() => handleExistingProblemSelect(problem)}
-                className={`
+          <>
+            <div className="grid md:grid-cols-2 gap-4">
+              {currentExistingProblems?.map((problem) => (
+                <div
+                  key={problem.id}
+                  onClick={() => handleExistingProblemSelect(problem)}
+                  className={`
                   cursor-pointer p-4 border rounded-lg transition-all 
                   ${
                     selectedProblems.some((p) => p.id === problem.id)
@@ -227,92 +339,191 @@ export default function TechnicalInfo() {
                       : "bg-white hover:bg-gray-50"
                   }
                 `}
-              >
-                <h3 className="font-semibold mb-2">{problem.title}</h3>
-                <p className="text-sm mb-2 text-gray-600 whitespace-pre-wrap">
-                  {problem.desc.length > 200
-                    ? `${problem.desc.substring(0, 200)}...`
-                    : problem.desc}
-                </p>
-                {selectedProblems.some((p) => p.id === problem.id) && (
-                  <div className="mt-2 text-purple-600 text-sm">✓ Selected</div>
-                )}
+                >
+                  <h3 className="font-semibold mb-2">{problem.title}</h3>
+                  <p className="text-sm mb-2 text-gray-600 whitespace-pre-wrap">
+                    {problem.desc.length > 200
+                      ? `${problem.desc.substring(0, 200)}...`
+                      : problem.desc}
+                  </p>
+                  {selectedProblems.some((p) => p.id === problem.id) && (
+                    <div className="mt-2 text-purple-600 text-sm">
+                      ✓ Selected
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 flex items-center justify-between bg-white px-4 py-3 sm:px-6 rounded-lg shadow-sm">
+              <div className="flex flex-1 justify-between sm:hidden">
+                <button
+                  onClick={prevPage}
+                  disabled={currentPage === 1}
+                  className={`relative inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
+                    currentPage === 1
+                      ? "bg-gray-100 text-gray-400"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={nextPage}
+                  disabled={currentPage === totalPages}
+                  className={`relative ml-3 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium ${
+                    currentPage === totalPages
+                      ? "bg-gray-100 text-gray-400"
+                      : "bg-white text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  Next
+                </button>
               </div>
-            ))}
-          </div>
+              <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700">
+                    Showing{" "}
+                    <span className="font-medium">{indexOfFirstQuiz + 1}</span>{" "}
+                    to{" "}
+                    <span className="font-medium">
+                      {Math.min(indexOfLastQuiz, existingProblems?.length)}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-medium">
+                      {existingProblems?.length}
+                    </span>{" "}
+                    questions
+                  </p>
+                </div>
+                <div>
+                  <nav
+                    className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                    aria-label="Pagination"
+                  >
+                    <button
+                      onClick={prevPage}
+                      disabled={currentPage === 1}
+                      className={`relative inline-flex items-center rounded-l-md px-4 py-2 text-sm font-medium ${
+                        currentPage === 1
+                          ? "bg-gray-100 text-gray-400"
+                          : "bg-white text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      Previous
+                    </button>
+                    <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={nextPage}
+                      disabled={currentPage === totalPages}
+                      className={`relative inline-flex items-center rounded-r-md px-4 py-2 text-sm font-medium ${
+                        currentPage === totalPages
+                          ? "bg-gray-100 text-gray-400"
+                          : "bg-white text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      Next
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         {showManualForm && (
           <div className="bg-white p-6 rounded-lg shadow-md">
             <form onSubmit={handleManualProblemSubmit} className="space-y-4">
               <div>
-                <label className="block mb-2">Problem Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Problem Title
+                </label>
                 <input
                   type="text"
                   value={newProblem.title}
                   onChange={(e) =>
                     setNewProblem({ ...newProblem, title: e.target.value })
                   }
-                  className="w-full p-2 border rounded"
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
               <div>
-                <label className="block mb-2">Problem Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Problem Description
+                </label>
                 <textarea
                   value={newProblem.desc}
                   onChange={(e) =>
                     setNewProblem({ ...newProblem, desc: e.target.value })
                   }
-                  className="w-full p-2 border rounded h-32"
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
-              <div>
-                <label className="block mb-2">
-                  Expected Solution (Optional)
-                </label>
-                <textarea
-                  value={newProblem.expectedSolution}
-                  onChange={(e) =>
-                    setNewProblem({
-                      ...newProblem,
-                      expectedSolution: e.target.value,
-                    })
-                  }
-                  className="w-full p-2 border rounded h-32"
-                />
+              <div className="text-right">
+                <button
+                  type="submit"
+                  className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-all"
+                >
+                  Add Question
+                </button>
               </div>
-              <button
-                type="submit"
-                className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
-              >
-                Add Problem
-              </button>
             </form>
           </div>
         )}
 
         {selectedProblems.length > 0 && (
-          <div className="mt-6 flex justify-between items-center">
-            <button
-              onClick={() => setShowReviewModal(true)}
-              className="bg-indigo-500 text-white px-6 py-2 rounded hover:bg-indigo-600"
-            >
-              Review Problems ({selectedProblems.length})
-            </button>
-            <button
-              onClick={nextRound}
-              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
-            >
-              Next Round
-            </button>
+          <div className="mt-6 bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <label className="text-gray-700 font-medium">
+                  Passing Marks:
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max={selectedProblems.length}
+                  value={passingMarks}
+                  onChange={(e) =>
+                    setPassingMarks(
+                      Math.min(
+                        Math.max(parseInt(e.target.value, 10), 0),
+                        selectedProblems.length
+                      )
+                    )
+                  }
+                  className="border rounded px-2 py-1 w-20 focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="text-gray-600 text-sm">
+                  ({passingMarks}/{selectedProblems.length})
+                </span>
+              </div>
+            </div>
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setShowReviewModal(true)}
+                className="flex items-center bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600 transition-all"
+              >
+                <BookOpen className="mr-2" size={18} />
+                Review Selected Questions
+              </button>
+              <button
+                onClick={nextRound}
+                className="flex items-center bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition-all"
+              >
+                Next Round
+                <ChevronRight className="ml-2" size={18} />
+              </button>
+            </div>
           </div>
         )}
 
         {showReviewModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
+              {/* Fixed Header */}
               <div className="p-6 border-b flex justify-between items-center">
                 <h2 className="text-2xl font-bold">
                   Selected Technical Problems
@@ -321,27 +532,20 @@ export default function TechnicalInfo() {
                   onClick={() => setShowReviewModal(false)}
                   className="text-gray-500 hover:text-gray-700"
                 >
-                  ✕
+                  <EyeOff size={24} />
                 </button>
               </div>
-              <div className="p-6 space-y-4">
+              {/* Scrollable Content */}
+              <div className="p-6 space-y-10 overflow-y-auto max-h-[70vh]">
                 {selectedProblems.map((problem, index) => (
                   <div
                     key={problem.id}
-                    className="border p-4 rounded bg-gray-50"
+                    className="border p-4 shadow-xl rounded bg-gray-50"
                   >
-                    <h3 className="font-semibold mb-2">
-                      Problem {index + 1}: {problem.title}
+                    <h3 className="font-semibold text-lg mb-2">
+                      Q{index + 1}. {problem.title}
                     </h3>
                     <p className="mb-2 whitespace-pre-wrap">{problem.desc}</p>
-                    {problem.expectedSolution && (
-                      <div className="mt-2 text-sm">
-                        <strong>Expected Solution:</strong>
-                        <pre className="bg-gray-100 p-2 rounded mt-1 overflow-x-auto">
-                          {problem.expectedSolution}
-                        </pre>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
