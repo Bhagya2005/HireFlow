@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 
 const RoundSelection = () => {
   const [selectedRounds, setSelectedRounds] = useState({
-    aptitude: false,
-    technical: false,
-    hrRound: false,
+    aptitude: true,
+    technical: true,
+    hrRound: true,
   });
 
   const [roundDurations, setRoundDurations] = useState({
@@ -105,7 +105,7 @@ const RoundSelection = () => {
                 <input
                   type="number"
                   id="aptitudeTime"
-                  step="5" 
+                  step="5"
                   value={roundDurations.aptitude}
                   onChange={(e) =>
                     handleDurationChange("aptitude", e.target.value)

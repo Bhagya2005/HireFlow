@@ -78,7 +78,7 @@ export default function TechnicalInfo() {
     fetch(`${BACKEND_URL}/getTech`)
       .then((response) => response.json())
       .then((data) => {
-        setExistingProblems(data);
+        setExistingProblems(data.techEntries);
         setLoader(false);
       })
       .catch((error) => {

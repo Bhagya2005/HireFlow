@@ -153,13 +153,6 @@ export default function AptitudeInfo() {
   };
 
   const generateQuiz = () => {
-    // if (!quizGenerationType) {
-    //   alert(
-    //     "Please specify the type of aptitude questions you want to generate."
-    //   );
-    //   return;
-    // }
-
     setLoader(true);
     axios
       .get(`${BACKEND_URL}/generateQuiz`, {
