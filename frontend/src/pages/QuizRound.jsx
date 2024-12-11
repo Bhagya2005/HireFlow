@@ -9,6 +9,8 @@ const QuizComponent = () => {
   const [userid, setuserid] = useState("")
   const [email, setemail] = useState("")
   const [name, setName] = useState("")
+  const[jobrole, setJobrole] = useState("")
+  const[hremail, setHremail] = useState("")
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -147,6 +149,8 @@ const QuizComponent = () => {
           `${BACKEND_URL}/getUserInfo/${userId}`
         );
         console.log("Dashboard data:", response.data);
+        setJobrole(response.data.jobRole);
+        setHremail(response.data.email);
 
         // Extract only emails from candidateData
         const emails =
@@ -164,6 +168,7 @@ const QuizComponent = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setScore(0); // Reset score before starting the quiz
+
 
     const candidateData = candidatesEmail;
 
@@ -189,6 +194,8 @@ const QuizComponent = () => {
       } else {
         setErrors({ email: "This email is not registered in candidate data." });
       }
+    } else {
+      alert("Give correct email, which you have given while applying to this job.");
     }
   };
 
@@ -211,7 +218,7 @@ const QuizComponent = () => {
   };
 
   const handleQuizSubmit = async () => {
-    const userId = localStorage.getItem("userId");
+    const userId = userid;
     const userEmail = email; // User's email
 
     if (!userEmail) {
@@ -235,14 +242,16 @@ const QuizComponent = () => {
         score,
       });
 
-      if (passingMarks <= score) {
-        console.log("USer email : ", email);
+      if (score >= passingMarks) {
+        console.log("User email : ", email);
 
         const templateParams = {
-          candidateName: name,
+          subject : "Congratulations! You're Invited to the Technical Round",
+          candidate_name: name,
+          hr_email: hremail,
           roundName: "Technical Round",
-          linkForNextRound: `${BACKEND_URL}/techRound`,
-          companyName: companyName,
+          tech_link: `${BACKEND_URL}/techRound`,
+          company_name: companyName,
           to_email: "tejhagargi9@gmail.com",
           recipient_address: email,
         };
@@ -257,9 +266,10 @@ const QuizComponent = () => {
         console.log("USer email : ", email);
 
         const templateParams = {
-          candidateName: name,
-          roundName: "Technical Round",
-          companyName: companyName,
+          job_role : jobrole,
+          candidate_name: name,
+          round_name: "Aptitude Round",
+          company_name: companyName,
           to_email: email,
         };
 
