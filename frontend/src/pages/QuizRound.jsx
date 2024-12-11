@@ -6,11 +6,11 @@ import "../index.css";
 import * as faceapi from "face-api.js";
 
 const QuizComponent = () => {
-  const [userid, setuserid] = useState("")
-  const [email, setemail] = useState("")
-  const [name, setName] = useState("")
-  const[jobrole, setJobrole] = useState("")
-  const[hremail, setHremail] = useState("")
+  const [userid, setuserid] = useState("");
+  const [email, setemail] = useState("");
+  const [name, setName] = useState("");
+  const [jobrole, setJobrole] = useState("");
+  const [hremail, setHremail] = useState("");
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -32,6 +32,11 @@ const QuizComponent = () => {
   const [screenshot, setScreenshot] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cheatComment, setCheatComment] = useState("");
+  const [aptitudeTiming, setAptitudeTiming] = useState("");
+
+  // New state for timer
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [isTimerActive, setIsTimerActive] = useState(false);
 
   useEffect(() => {
     startVideo();
@@ -50,14 +55,11 @@ const QuizComponent = () => {
   };
 
   const loadModels = () => {
-    Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
-      // faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
-      // faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
-      // faceapi.nets.faceExpressionNet.loadFromUri("/models"),
-    ]).then(() => {
-      detectFaces();
-    });
+    Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri("/models")]).then(
+      () => {
+        detectFaces();
+      }
+    );
   };
 
   const takeScreenshot = () => {
@@ -97,7 +99,6 @@ const QuizComponent = () => {
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw circles for each detected face
       resizedDetections.forEach((detection) => {
         const { x, y, width, height } = detection.box;
         const centerX = x + width / 2;
@@ -111,7 +112,6 @@ const QuizComponent = () => {
         ctx.stroke();
       });
 
-      // Trigger cheating modal if two or more faces are detected
       if (detections.length >= 2 && !isModalOpen) {
         const screenshotData = takeScreenshot();
         setScreenshot(screenshotData);
@@ -136,6 +136,37 @@ const QuizComponent = () => {
     setIsModalOpen(false);
   };
 
+  // Start timer when quiz begins
+  const startTimer = (minutes) => {
+    setTimeRemaining(minutes * 60); // Convert minutes to seconds
+    setIsTimerActive(true);
+  };
+
+  // Timer effect to countdown and auto-submit when time is up
+  useEffect(() => {
+    let interval = null;
+    if (isTimerActive && timeRemaining > 0) {
+      interval = setInterval(() => {
+        setTimeRemaining((prevTime) => prevTime - 1);
+      }, 1000);
+    } else if (isTimerActive && timeRemaining === 0) {
+      // Time is up, automatically submit the quiz
+      clearInterval(interval);
+      handleQuizSubmit();
+    }
+
+    return () => clearInterval(interval);
+  }, [isTimerActive, timeRemaining]);
+
+  // Format time remaining as MM:SS
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -151,12 +182,12 @@ const QuizComponent = () => {
         console.log("Dashboard data:", response.data);
         setJobrole(response.data.jobRole);
         setHremail(response.data.email);
+        setAptitudeTiming(response.data.aptitudeTime);
 
-        // Extract only emails from candidateData
         const emails =
           response.data.candidateData?.map((candidate) => candidate.email) ||
           [];
-        setCandidatesEmails(emails); // Assuming you have a state like setCandidatesEmails
+        setCandidatesEmails(emails);
       } catch (error) {
         console.error("Error fetching user info:", error);
       }
@@ -169,7 +200,6 @@ const QuizComponent = () => {
     e.preventDefault();
     setScore(0); // Reset score before starting the quiz
 
-
     const candidateData = candidatesEmail;
 
     const candidateExists = candidateData.some(
@@ -177,25 +207,28 @@ const QuizComponent = () => {
     );
 
     if (candidateExists) {
-      if (true) {
-        try {
-          setLoading(true);
-          const response = await axios.get(`${BACKEND_URL}/getQuiz`, {
-            params: { userId: userid },
-          });
-          console.log("Quiz Responses : ", response);
-          setExistingQuizzes(response.data);
-          setSubmitted(true);
-          setLoading(false);
-        } catch (err) {
-          setError("Failed to fetch quiz. Please try again.", err);
-          setLoading(false);
+      try {
+        setLoading(true);
+        const response = await axios.get(`${BACKEND_URL}/getQuiz`, {
+          params: { userId: userid },
+        });
+        console.log("Quiz Responses : ", response);
+        setExistingQuizzes(response.data);
+        setSubmitted(true);
+        setLoading(false);
+
+        // Start timer when quiz begins
+        if (aptitudeTiming) {
+          startTimer(parseInt(aptitudeTiming));
         }
-      } else {
-        setErrors({ email: "This email is not registered in candidate data." });
+      } catch (err) {
+        setError("Failed to fetch quiz. Please try again.", err);
+        setLoading(false);
       }
     } else {
-      alert("Give correct email, which you have given while applying to this job.");
+      alert(
+        "Give correct email, which you have given while applying to this job."
+      );
     }
   };
 
@@ -205,21 +238,17 @@ const QuizComponent = () => {
       [quizId]: selectedOption,
     }));
 
-    // Check if the selected answer matches the correct answer
     const currentQuiz = existingQuizzes[quizId];
     if (currentQuiz && currentQuiz.ans === selectedOption) {
       setScore((prevScore) => prevScore + 1);
-    } else if (
-      currentQuiz &&
-      selectedAnswers[quizId] === currentQuiz.ans // If previously correct, subtract the score
-    ) {
+    } else if (currentQuiz && selectedAnswers[quizId] === currentQuiz.ans) {
       setScore((prevScore) => prevScore - 1);
     }
   };
 
   const handleQuizSubmit = async () => {
     const userId = userid;
-    const userEmail = email; // User's email
+    const userEmail = email;
 
     if (!userEmail) {
       setError("Email is required to send the rejection email.");
@@ -235,7 +264,6 @@ const QuizComponent = () => {
         `User's passing marks: ${passingMarks}, Your score: ${score}`
       );
 
-      // Update backend with quiz results
       await axios.post(`${BACKEND_URL}/updateUser`, {
         userId,
         userEmail,
@@ -243,16 +271,14 @@ const QuizComponent = () => {
       });
 
       if (score >= passingMarks) {
-        console.log("User email : ", email);
-
         const templateParams = {
-          subject : "Congratulations! You're Invited to the Technical Round",
+          subject: "Congratulations! You're Invited to the Technical Round",
           candidate_name: name,
           hr_email: hremail,
           roundName: "Technical Round",
           tech_link: `${BACKEND_URL}/techRound`,
           company_name: companyName,
-          to_email: "tejhagargi9@gmail.com",
+          to_email: userEmail,
           recipient_address: email,
         };
 
@@ -263,14 +289,12 @@ const QuizComponent = () => {
           console.error("Failed to send email:", emailError);
         }
       } else {
-        console.log("USer email : ", email);
-
         const templateParams = {
-          job_role : jobrole,
+          job_role: jobrole,
           candidate_name: name,
           round_name: "Aptitude Round",
           company_name: companyName,
-          to_email: email,
+          to_email: userEmail,
         };
 
         try {
@@ -294,7 +318,7 @@ const QuizComponent = () => {
         Enter Your Details
       </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
+        <div>
           <input
             type="text"
             name="name"
@@ -358,6 +382,11 @@ const QuizComponent = () => {
 
   const renderQuizzes = () => (
     <div className="w-full max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6 space-y-6">
+      {/* Timer Display */}
+      <div className="fixed top-4 left-4 bg-red-500 text-white px-4 py-2 rounded-lg">
+        Time Remaining: {formatTime(timeRemaining)}
+      </div>
+
       <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
         Quiz Questions
       </h2>

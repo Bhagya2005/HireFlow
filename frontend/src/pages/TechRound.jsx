@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Play,
   AlertCircle,
@@ -37,6 +37,150 @@ const executeCode = async (language, sourceCode) => {
   return response.data;
 };
 
+const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
+  const [name, setName] = useState("");
+  const [userId, setUserId] = useState("");
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!name.trim()) {
+      setError("Name is required");
+      return;
+    }
+    
+    if (!userId.trim()) {
+      setError("User ID is required");
+      return;
+    }
+    
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+      setError("Please enter a valid email");
+      return;
+    }
+
+    // Store user info in localStorage
+    localStorage.setItem("userName", name);
+    localStorage.setItem("userId", userId);
+    localStorage.setItem("userEmail", email);
+
+    onSubmit();
+  };
+
+  return (
+    <div 
+      className={`min-h-screen flex items-center justify-center ${
+        isDarkMode 
+          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white" 
+          : "bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 text-gray-800"
+      }`}
+    >
+      <div 
+        className={`w-full max-w-md p-8 rounded-xl shadow-lg ${
+          isDarkMode 
+            ? "bg-gray-800 border border-gray-700" 
+            : "bg-white border border-gray-200"
+        }`}
+      >
+        <h2 
+          className={`text-3xl font-bold mb-6 text-center ${
+            isDarkMode
+              ? "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400"
+              : "text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+          }`}
+        >
+          Technical Round
+        </h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label 
+              htmlFor="name" 
+              className={`block mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}
+            >
+              Full Name
+            </label>
+            <input 
+              type="text" 
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your full name"
+              className={`w-full p-3 rounded-lg ${
+                isDarkMode 
+                  ? "bg-gray-700 border-gray-600 text-white" 
+                  : "bg-gray-100 border-gray-300 text-gray-800"
+              }`}
+            />
+          </div>
+          <div className="mb-4">
+            <label 
+              htmlFor="userId" 
+              className={`block mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}
+            >
+              User ID
+            </label>
+            <input 
+              type="text" 
+              id="userId"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              placeholder="Enter your user ID"
+              className={`w-full p-3 rounded-lg ${
+                isDarkMode 
+                  ? "bg-gray-700 border-gray-600 text-white" 
+                  : "bg-gray-100 border-gray-300 text-gray-800"
+              }`}
+            />
+          </div>
+          <div className="mb-6">
+            <label 
+              htmlFor="email" 
+              className={`block mb-2 ${isDarkMode ? "text-gray-300" : "text-gray-700"}`}
+            >
+              Email
+            </label>
+            <input 
+              type="email" 
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className={`w-full p-3 rounded-lg ${
+                isDarkMode 
+                  ? "bg-gray-700 border-gray-600 text-white" 
+                  : "bg-gray-100 border-gray-300 text-gray-800"
+              }`}
+            />
+          </div>
+          {error && (
+            <div 
+              className={`mb-4 p-3 rounded-lg text-center ${
+                isDarkMode 
+                  ? "bg-red-900/50 text-red-300" 
+                  : "bg-red-100 text-red-600"
+              }`}
+            >
+              {error}
+            </div>
+          )}
+          <button 
+            type="submit" 
+            className={`w-full p-3 rounded-lg transition-colors ${
+              isDarkMode
+                ? "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+            }`}
+          >
+            Start Technical Round
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const TechRound = () => {
   const [problems, setProblems] = useState([]);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
@@ -49,9 +193,29 @@ const TechRound = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [loading, setLoading] = useState(true);
   const [techSolvedArr, setTechSolvedArr] = useState([]);
-
-  // Store code for each problem separately
   const [codeStore, setCodeStore] = useState({});
+  const [showUserInfoDialog, setShowUserInfoDialog] = useState(true);
+  const[techTiming, setTechTiming] = useState(0);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const userId = userId;
+        if (!userId) {
+          console.error("No userId found in localStorage.");
+          return;
+        }
+
+        const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
+        setTechTiming(response.data.technicalTiming);
+
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   // Real-time code syncing using SSE
   useEffect(() => {
@@ -67,7 +231,7 @@ const TechRound = () => {
   }, []);
 
   const updateUser = async () => {
-    let userEmail = prompt("Enter ur email");
+    let userEmail = localStorage.getItem("userEmail");
 
     const templateParams = {
       jobRole: localStorage.getItem("jobrole"),
@@ -94,6 +258,8 @@ const TechRound = () => {
           headers: { "Content-Type": "application/json" },
         }
       );
+
+      console.log(response);
     } catch (err) {
       console.error("Error:", err);
       alert("An error occurred while scheduling the interview");
@@ -219,6 +385,15 @@ const TechRound = () => {
     document.body.classList.toggle("light", !isDarkMode);
   }, [isDarkMode]);
 
+  if (showUserInfoDialog) {
+    return (
+      <UserInfoDialog 
+        onSubmit={() => setShowUserInfoDialog(false)} 
+        isDarkMode={isDarkMode}
+      />
+    );
+  }
+
   if (loading) {
     return (
       <div
@@ -283,6 +458,7 @@ const TechRound = () => {
       setSubmitIsRunning(false);
     }
   };
+  
 
   return (
     <div

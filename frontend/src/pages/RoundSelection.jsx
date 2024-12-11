@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const RoundSelection = () => {
   const [selectedRounds, setSelectedRounds] = useState({
@@ -7,14 +8,42 @@ const RoundSelection = () => {
     technical: false,
     hrRound: false,
   });
+  const [userid, setuserid] = useState("")
 
   const [roundDurations, setRoundDurations] = useState({
     aptitude: "30", // Default duration
     technical: "60", // Default duration
     hrRound: "60", // Default duration
   });
-
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
+
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, [])
+  
+  const fetchUserInfo = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        console.error("No userId found in localStorage.");
+        return;
+      }
+
+      const response = await axios.get(
+        `${BACKEND_URL}/getUserInfo/${userId}`
+      );
+      console.log("Dashboard data:", response.data);
+      setuserid(response.data._id)
+
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+    }
+  };
+
+
+
 
   const handleRoundChange = (round) => {
     setSelectedRounds((prev) => ({
@@ -37,33 +66,50 @@ const RoundSelection = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    if (selectedRounds.aptitude === true) {
-      localStorage.setItem("aptitude", true);
-      localStorage.setItem("aptitudeDuration", roundDurations.aptitude || "0");
-    }
-    if (selectedRounds.technical === true) {
-      localStorage.setItem("technical", true);
-      localStorage.setItem(
-        "technicalDuration",
-        roundDurations.technical || "0"
-      );
-    }
-    if (selectedRounds.hrRound === true) {
-      localStorage.setItem("hrRound", true);
-      localStorage.setItem("hrRoundDuration", roundDurations.hrRound || "0");
-    }
-
-    if (selectedRounds.aptitude === true) {
-      navigate("/aptitudeInfo");
-    } else if (selectedRounds.technical === true) {
-      navigate("/technicalInfo");
-    } else if (selectedRounds.hrRound === true) {
-      navigate("/hrInfo");
-    } else {
-      alert("Please select at least one round.");
+  const handleSubmit = async () => {
+    try {
+      // Make the API call and wait for the response
+      const response = await axios.post(`${BACKEND_URL}/updateUser`, {
+        userId: userid,
+        aptitudeTime: roundDurations.aptitude,
+        techTime: roundDurations.technical,
+        hrTime: roundDurations.hrRound,
+      });
+      console.log("Round times updated successfully in backend...:", response.data);
+  
+      // Store selected rounds and durations in localStorage
+      if (selectedRounds.aptitude) {
+        localStorage.setItem("aptitude", true);
+        localStorage.setItem("aptitudeDuration", roundDurations.aptitude || "0");
+      }
+      if (selectedRounds.technical) {
+        localStorage.setItem("technical", true);
+        localStorage.setItem(
+          "technicalDuration",
+          roundDurations.technical || "0"
+        );
+      }
+      if (selectedRounds.hrRound) {
+        localStorage.setItem("hrRound", true);
+        localStorage.setItem("hrRoundDuration", roundDurations.hrRound || "0");
+      }
+  
+      // Navigate based on selected round
+      if (selectedRounds.aptitude) {
+        navigate("/aptitudeInfo");
+      } else if (selectedRounds.technical) {
+        navigate("/technicalInfo");
+      } else if (selectedRounds.hrRound) {
+        navigate("/hrInfo");
+      } else {
+        alert("Please select at least one round.");
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+      alert("Failed to update user. Please try again.");
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
