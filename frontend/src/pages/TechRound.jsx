@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Play,
   AlertCircle,
   Sun,
+  Clock,
   Moon,
   ChevronLeft,
   ChevronRight,
@@ -37,6 +38,206 @@ const executeCode = async (language, sourceCode) => {
   return response.data;
 };
 
+const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
+  const [name, setName] = useState("");
+  const [userId, setUserId] = useState("");
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [candidateEmails, setCandidatesEmails] = useState([]);
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      if (!userId.trim()) {
+        console.error("No userId found.");
+        alert("User ID is required.");
+        return;
+      }
+
+      // Fetch user info from the backend
+      const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
+
+      // Extract emails from the response
+      const emails =
+        response.data.candidateData?.map((candidate) => candidate.email) || [];
+      setCandidatesEmails(emails);
+      console.log(candidateEmails);
+      
+      console.log("Fetched candidate emails:", emails);
+
+      // Check if the entered email exists
+      const emailExists = emails.some(
+        (candidateEmail) => candidateEmail === email
+      );
+      if (!emailExists) {
+        alert("Email does not exist. Please enter a valid email.");
+        return;
+      }
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+      alert("Failed to fetch user info. Please try again later.");
+      return;
+    }
+
+    if (!name.trim()) {
+      setError("Name is required");
+      return;
+    }
+
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
+      setError("Please enter a valid email");
+      return;
+    }
+
+    // Store user info in localStorage
+    localStorage.setItem("userName", name);
+    localStorage.setItem("technicalUserId", userId);
+    localStorage.setItem("technicalUserEmail", email);
+
+
+    try {
+      console.log("Helloooooooooooooooo");
+
+      const userId = localStorage.getItem("technicalUserId");
+      if (!userId) {
+        console.error("No userId found in localStorage.");
+        return;
+      }
+
+      const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
+
+      console.log("All backend data : ", response.data);
+
+      const techTime = response.data.techTime || 0;
+      localStorage.setItem("techTime", techTime);
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+    }
+
+    onSubmit();
+  };
+
+  return (
+    <div
+      className={`min-h-screen flex items-center justify-center ${
+        isDarkMode
+          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white"
+          : "bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 text-gray-800"
+      }`}
+    >
+      <div
+        className={`w-full max-w-md p-8 rounded-xl shadow-lg ${
+          isDarkMode
+            ? "bg-gray-800 border border-gray-700"
+            : "bg-white border border-gray-200"
+        }`}
+      >
+        <h2
+          className={`text-3xl font-bold mb-6 text-center ${
+            isDarkMode
+              ? "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400"
+              : "text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+          }`}
+        >
+          Technical Round
+        </h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label
+              htmlFor="name"
+              className={`block mb-2 ${
+                isDarkMode ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your full name"
+              className={`w-full p-3 rounded-lg ${
+                isDarkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-gray-100 border-gray-300 text-gray-800"
+              }`}
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              htmlFor="userId"
+              className={`block mb-2 ${
+                isDarkMode ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
+              User ID
+            </label>
+            <input
+              type="text"
+              id="userId"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              placeholder="Enter your user ID"
+              className={`w-full p-3 rounded-lg ${
+                isDarkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-gray-100 border-gray-300 text-gray-800"
+              }`}
+            />
+          </div>
+          <div className="mb-6">
+            <label
+              htmlFor="email"
+              className={`block mb-2 ${
+                isDarkMode ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className={`w-full p-3 rounded-lg ${
+                isDarkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-gray-100 border-gray-300 text-gray-800"
+              }`}
+            />
+          </div>
+          {error && (
+            <div
+              className={`mb-4 p-3 rounded-lg text-center ${
+                isDarkMode
+                  ? "bg-red-900/50 text-red-300"
+                  : "bg-red-100 text-red-600"
+              }`}
+            >
+              {error}
+            </div>
+          )}
+          <button
+            type="submit"
+            className={`w-full p-3 rounded-lg transition-colors ${
+              isDarkMode
+                ? "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+            }`}
+          >
+            Start Technical Round
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const TechRound = () => {
   const [problems, setProblems] = useState([]);
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
@@ -49,9 +250,90 @@ const TechRound = () => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [loading, setLoading] = useState(true);
   const [techSolvedArr, setTechSolvedArr] = useState([]);
-
-  // Store code for each problem separately
   const [codeStore, setCodeStore] = useState({});
+  const [showUserInfoDialog, setShowUserInfoDialog] = useState(true);
+  const [jobRole, setjobRole] = useState("");
+  const [companyName, setcompanyName] = useState("");
+
+  const [techTiming, setTechTiming] = useState(localStorage.getItem("techTime") || 0);
+  const [remainingTime, setRemainingTime] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+
+  // Fetch user info and set technical timing
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        console.log("Helloooooooooooooooo");
+
+        const userId = localStorage.getItem("technicalUserId");
+        if (!userId) {
+          console.error("No userId found in localStorage.");
+          return;
+        }
+
+        const response = await axios.get(
+          `${BACKEND_URL}/getUserInfo/${userId}`
+        );
+
+        console.log("All backend data : ", response.data);
+
+        const techTime = response.data.techTime || 0;
+        setTechTiming(techTime);
+        setRemainingTime(techTime * 60); // Convert minutes to seconds
+        setIsTimerRunning(true);
+        setjobRole(response.data.jobRole);
+        setcompanyName(response.data.companyName);
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      }
+    };
+
+    fetchUserInfo();
+  }, [techTiming]);
+
+  useEffect(() => {
+    let interval;
+    if (isTimerRunning && remainingTime > 0) {
+      interval = setInterval(() => {
+        setRemainingTime((prevTime) => {
+          if (prevTime <= 1) {
+            clearInterval(interval);
+            setIsTimerRunning(false);
+            handleTimeExpired();
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+    } 
+
+    return () => clearInterval(interval);
+  }, [isTimerRunning, remainingTime]);
+
+  const handleTimeExpired = async () => {
+    // Attempt to submit all solved problems
+    try {
+      for (let i = 0; i < problems.length; i++) {
+        const problemCode = codeStore[i] || code;
+
+        if (problemCode) {
+          await axios.post(`${BACKEND_URL}/checkTechSolution`, {
+            title: problems[i].title,
+            desc: problems[i].desc,
+            code: problemCode,
+          });
+        }
+      }
+
+      // Update user after submitting all problems
+      await updateUser();
+    } catch (error) {
+      console.error("Error submitting problems on time expiration:", error);
+    }
+
+    // You might want to add a modal or redirect logic here
+    alert("Technical round time has expired!");
+  };
 
   // Real-time code syncing using SSE
   useEffect(() => {
@@ -67,12 +349,12 @@ const TechRound = () => {
   }, []);
 
   const updateUser = async () => {
-    let userEmail = prompt("Enter ur email");
+    let userEmail = localStorage.getItem("technicalUserEmail");
 
     const templateParams = {
-      jobRole: localStorage.getItem("jobrole"),
+      jobRole: jobRole,
       linkForNextRound: `${BACKEND_URL}/hrRoundEntrance`,
-      companyName: localStorage.getItem("companyName"),
+      companyName: companyName,
       to_email: userEmail,
     };
 
@@ -88,12 +370,14 @@ const TechRound = () => {
         `${BACKEND_URL}/updateUser`,
         {
           userEmail: userEmail,
-          userId: localStorage.getItem("userId"),
+          userId: localStorage.getItem("technicalUserId"),
         },
         {
           headers: { "Content-Type": "application/json" },
         }
       );
+
+      console.log(response);
     } catch (err) {
       console.error("Error:", err);
       alert("An error occurred while scheduling the interview");
@@ -110,7 +394,7 @@ const TechRound = () => {
     const fetchProblems = async () => {
       try {
         const response = await axios.get(`${BACKEND_URL}/getTech`, {
-          params: { userId: localStorage.getItem("userId") },
+          params: { userId: localStorage.getItem("technicalUserId") },
           headers: { "Content-Type": "application/json" },
         });
         setProblems(response.data.techEntries || []);
@@ -144,6 +428,12 @@ const TechRound = () => {
     } finally {
       setIsRunning(false);
     }
+  };
+
+  const formatTime = (timeInSeconds) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = timeInSeconds % 60;
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
   const formatDescription = (desc) => {
@@ -218,6 +508,15 @@ const TechRound = () => {
     document.body.classList.toggle("dark", isDarkMode);
     document.body.classList.toggle("light", !isDarkMode);
   }, [isDarkMode]);
+
+  if (showUserInfoDialog) {
+    return (
+      <UserInfoDialog
+        onSubmit={() => setShowUserInfoDialog(false)}
+        isDarkMode={isDarkMode}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -304,6 +603,20 @@ const TechRound = () => {
           {/* Problem Navigation and Theme Toggle */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
+              {/* Existing navigation buttons */}
+              {/* Timer Display */}
+              <div
+                className={`flex items-center px-4 py-2 rounded-full ${
+                  isDarkMode
+                    ? "bg-gray-700 text-gray-200"
+                    : "bg-gray-200 text-gray-800"
+                } ${remainingTime <= 60 ? "animate-pulse text-red-500" : ""}`}
+              >
+                <Clock className="mr-2 h-5 w-5" />
+                <span className="font-mono text-sm">
+                  {formatTime(remainingTime)}
+                </span>
+              </div>
               <button
                 onClick={() => handleProblemChange(currentProblemIndex - 1)}
                 disabled={currentProblemIndex === 0}
@@ -345,20 +658,23 @@ const TechRound = () => {
               </button>
             </div>
 
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`p-3 rounded-full shadow-lg transition-all duration-300 ${
-                isDarkMode
-                  ? "bg-gray-700 hover:bg-gray-600 text-yellow-400"
-                  : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-              }`}
-            >
-              {isDarkMode ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </button>
+            {/* Timer and Theme Toggle */}
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className={`p-3 rounded-full shadow-lg transition-all duration-300 ${
+                  isDarkMode
+                    ? "bg-gray-700 hover:bg-gray-600 text-yellow-400"
+                    : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                }`}
+              >
+                {isDarkMode ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
 
           <h1
