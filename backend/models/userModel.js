@@ -9,6 +9,9 @@ const userSchema = new mongoose.Schema({
   date: { type: String, default: Date },
   startTime: { type: String },
   endTime: { type: String },
+  aptitudeTime: { type: String },
+  techTime: { type: String },
+  hrTime: { type: String },
   allAptitudes: {
     type: Array,
     default: [], // Array of tech problems directly

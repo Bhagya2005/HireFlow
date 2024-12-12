@@ -23,6 +23,9 @@ router.post("/updateUser", async (req, res) => {
     techSolved,
     score,
     candidateData,
+    aptitudeTime,
+    techTime,
+    hrTime,
   } = req.body;
 
   try {
@@ -39,7 +42,10 @@ router.post("/updateUser", async (req, res) => {
     if (passingMarks) user.aptitudePassingMarks = passingMarks;
     if (startTime) user.startTime = startTime;
     if (endTime) user.endTime = endTime;
-    if(candidateData) user.candidateData = candidateData;
+    if (candidateData) user.candidateData = candidateData;
+    if (aptitudeTime) user.aptitudeTime = aptitudeTime;
+    if (techTime) user.techTime = techTime;
+    if (hrTime) user.hrTime = hrTime;
 
     // Check if aptitude passingMarks are set and if score meets/exceeds the passingMarks
     if (score >= user.aptitudePassingMarks) {
