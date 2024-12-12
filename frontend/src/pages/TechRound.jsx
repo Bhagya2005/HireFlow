@@ -46,9 +46,10 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
   const [candidateEmails, setCandidatesEmails] = useState([]);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     try {
       if (!userId.trim()) {
         console.error("No userId found.");
@@ -63,6 +64,8 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
       const emails =
         response.data.candidateData?.map((candidate) => candidate.email) || [];
       setCandidatesEmails(emails);
+      console.log(candidateEmails);
+      
       console.log("Fetched candidate emails:", emails);
 
       // Check if the entered email exists
@@ -93,6 +96,26 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
     localStorage.setItem("userName", name);
     localStorage.setItem("technicalUserId", userId);
     localStorage.setItem("technicalUserEmail", email);
+
+
+    try {
+      console.log("Helloooooooooooooooo");
+
+      const userId = localStorage.getItem("technicalUserId");
+      if (!userId) {
+        console.error("No userId found in localStorage.");
+        return;
+      }
+
+      const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
+
+      console.log("All backend data : ", response.data);
+
+      const techTime = response.data.techTime || 0;
+      localStorage.setItem("techTime", techTime);
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+    }
 
     onSubmit();
   };
@@ -229,16 +252,19 @@ const TechRound = () => {
   const [techSolvedArr, setTechSolvedArr] = useState([]);
   const [codeStore, setCodeStore] = useState({});
   const [showUserInfoDialog, setShowUserInfoDialog] = useState(true);
-  const [techTiming, setTechTiming] = useState(0);
   const [jobRole, setjobRole] = useState("");
   const [companyName, setcompanyName] = useState("");
+
+  const [techTiming, setTechTiming] = useState(localStorage.getItem("techTime") || 0);
   const [remainingTime, setRemainingTime] = useState(0);
-  const [timerActive, setTimerActive] = useState(false);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
 
   // Fetch user info and set technical timing
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
+        console.log("Helloooooooooooooooo");
+
         const userId = localStorage.getItem("technicalUserId");
         if (!userId) {
           console.error("No userId found in localStorage.");
@@ -248,7 +274,13 @@ const TechRound = () => {
         const response = await axios.get(
           `${BACKEND_URL}/getUserInfo/${userId}`
         );
-        setTechTiming(response.data.techTime);
+
+        console.log("All backend data : ", response.data);
+
+        const techTime = response.data.techTime || 0;
+        setTechTiming(techTime);
+        setRemainingTime(techTime * 60); // Convert minutes to seconds
+        setIsTimerRunning(true);
         setjobRole(response.data.jobRole);
         setcompanyName(response.data.companyName);
       } catch (error) {
@@ -257,7 +289,51 @@ const TechRound = () => {
     };
 
     fetchUserInfo();
-  }, []);
+  }, [techTiming]);
+
+  useEffect(() => {
+    let interval;
+    if (isTimerRunning && remainingTime > 0) {
+      interval = setInterval(() => {
+        setRemainingTime((prevTime) => {
+          if (prevTime <= 1) {
+            clearInterval(interval);
+            setIsTimerRunning(false);
+            handleTimeExpired();
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+    } 
+
+    return () => clearInterval(interval);
+  }, [isTimerRunning, remainingTime]);
+
+  const handleTimeExpired = async () => {
+    // Attempt to submit all solved problems
+    try {
+      for (let i = 0; i < problems.length; i++) {
+        const problemCode = codeStore[i] || code;
+
+        if (problemCode) {
+          await axios.post(`${BACKEND_URL}/checkTechSolution`, {
+            title: problems[i].title,
+            desc: problems[i].desc,
+            code: problemCode,
+          });
+        }
+      }
+
+      // Update user after submitting all problems
+      await updateUser();
+    } catch (error) {
+      console.error("Error submitting problems on time expiration:", error);
+    }
+
+    // You might want to add a modal or redirect logic here
+    alert("Technical round time has expired!");
+  };
 
   // Real-time code syncing using SSE
   useEffect(() => {
@@ -271,32 +347,6 @@ const TechRound = () => {
       eventSource.close();
     };
   }, []);
-
-  // Timer effect
-  useEffect(() => {
-    let timer;
-    if (timerActive && remainingTime > 0) {
-      timer = setInterval(() => {
-        setRemainingTime((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            handleTimeExpired();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [timerActive, remainingTime]);
-
-  // Start timer when user info is submitted
-  useEffect(() => {
-    if (!showUserInfoDialog && techTiming > 0) {
-      setRemainingTime(techTiming * 60); // Convert minutes to seconds
-      setTimerActive(true);
-    }
-  }, [showUserInfoDialog, techTiming]);
 
   const updateUser = async () => {
     let userEmail = localStorage.getItem("technicalUserEmail");
@@ -332,33 +382,6 @@ const TechRound = () => {
       console.error("Error:", err);
       alert("An error occurred while scheduling the interview");
     }
-  };
-
-  // Handle time expiration
-  const handleTimeExpired = async () => {
-    setTimerActive(false);
-    
-    try {
-      const response = await axios.post(`${BACKEND_URL}/checkTechSolution`, {
-        title: currentProblem.title,
-        desc: currentProblem.desc,
-        code: code,
-      });
-
-      await updateUser();
-
-      alert("Technical round time has expired. Moving to next round.");
-    } catch (error) {
-      console.error("Error during time expiration handling:", error);
-      alert("Technical round time has expired.");
-    }
-  };
-
-  // Format time to MM:SS
-  const formatTime = (totalSeconds) => {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
   // Update code in backend on change
@@ -405,6 +428,12 @@ const TechRound = () => {
     } finally {
       setIsRunning(false);
     }
+  };
+
+  const formatTime = (timeInSeconds) => {
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = timeInSeconds % 60;
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
   const formatDescription = (desc) => {
@@ -575,6 +604,19 @@ const TechRound = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
               {/* Existing navigation buttons */}
+              {/* Timer Display */}
+              <div
+                className={`flex items-center px-4 py-2 rounded-full ${
+                  isDarkMode
+                    ? "bg-gray-700 text-gray-200"
+                    : "bg-gray-200 text-gray-800"
+                } ${remainingTime <= 60 ? "animate-pulse text-red-500" : ""}`}
+              >
+                <Clock className="mr-2 h-5 w-5" />
+                <span className="font-mono text-sm">
+                  {formatTime(remainingTime)}
+                </span>
+              </div>
               <button
                 onClick={() => handleProblemChange(currentProblemIndex - 1)}
                 disabled={currentProblemIndex === 0}
@@ -618,23 +660,6 @@ const TechRound = () => {
 
             {/* Timer and Theme Toggle */}
             <div className="flex items-center space-x-4">
-              {timerActive && (
-                <div 
-                  className={`flex items-center space-x-2 ${
-                    remainingTime <= 300 // Less than 5 minutes
-                      ? "text-red-500"
-                      : isDarkMode
-                      ? "text-gray-300"
-                      : "text-gray-600"
-                  }`}
-                >
-                  <Clock className="h-5 w-5" />
-                  <span className="font-mono font-semibold">
-                    {formatTime(remainingTime)}
-                  </span>
-                </div>
-              )}
-
               <button
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 className={`p-3 rounded-full shadow-lg transition-all duration-300 ${
