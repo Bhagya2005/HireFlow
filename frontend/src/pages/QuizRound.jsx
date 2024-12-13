@@ -218,7 +218,7 @@ const QuizComponent = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const userId = localStorage.getItem("userId");
+        const userId = userid;
         if (!userId) {
           console.error("No userId found in localStorage.");
           return;
@@ -231,6 +231,7 @@ const QuizComponent = () => {
         setJobrole(response.data.jobRole);
         setHremail(response.data.email);
         setAptitudeTiming(response.data.aptitudeTime);
+        setCandidatesEmails(response.data.candidateData);
 
         const emails =
           response.data.candidateData?.map((candidate) => candidate.email) ||

@@ -97,6 +97,7 @@ export default function TechnicalInfo() {
     console.log("techGenerationType: ", techGenerationType);
     axios
       .get(`${BACKEND_URL}/generateTech`, {
+        timeout: 50000,
         params: { techType: techGenerationType },
       })
       .then((response) => {
@@ -226,11 +227,11 @@ len
     // Simulated POST request to add tech entries
 
     // Navigation simulation
-    // if (isHr === "true") {
-    //   window.location.href = "/hrInfo";
-    // } else {
-    //   window.location.href = "/dashboard";
-    // }
+    if (isHr === "true") {
+      window.location.href = "/hrInfo";
+    } else {
+      window.location.href = "/dashboard";
+    }
   };
 
   useEffect(() => {

@@ -8,7 +8,7 @@ const RoundSelection = () => {
     technical: true,
     hrRound: true,
   });
-  const [userid, setuserid] = useState("")
+  const [userid, setuserid] = useState("");
 
   const [roundDurations, setRoundDurations] = useState({
     aptitude: "30", // Default duration
@@ -18,11 +18,10 @@ const RoundSelection = () => {
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
 
-
   useEffect(() => {
     fetchUserInfo();
-  }, [])
-  
+  }, []);
+
   const fetchUserInfo = async () => {
     try {
       const userId = localStorage.getItem("userId");
@@ -31,19 +30,13 @@ const RoundSelection = () => {
         return;
       }
 
-      const response = await axios.get(
-        `${BACKEND_URL}/getUserInfo/${userId}`
-      );
+      const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
       console.log("Dashboard data:", response.data);
-      setuserid(response.data._id)
-
+      setuserid(response.data._id);
     } catch (error) {
       console.error("Error fetching user info:", error);
     }
   };
-
-
-
 
   const handleRoundChange = (round) => {
     setSelectedRounds((prev) => ({
@@ -75,12 +68,18 @@ const RoundSelection = () => {
         techTime: roundDurations.technical,
         hrTime: roundDurations.hrRound,
       });
-      console.log("Round times updated successfully in backend...:", response.data);
-  
+      console.log(
+        "Round times updated successfully in backend...:",
+        response.data
+      );
+
       // Store selected rounds and durations in localStorage
       if (selectedRounds.aptitude) {
         localStorage.setItem("aptitude", true);
-        localStorage.setItem("aptitudeDuration", roundDurations.aptitude || "0");
+        localStorage.setItem(
+          "aptitudeDuration",
+          roundDurations.aptitude || "0"
+        );
       }
       if (selectedRounds.technical) {
         localStorage.setItem("technical", true);
@@ -93,7 +92,7 @@ const RoundSelection = () => {
         localStorage.setItem("hrRound", true);
         localStorage.setItem("hrRoundDuration", roundDurations.hrRound || "0");
       }
-  
+
       // Navigate based on selected round
       if (selectedRounds.aptitude) {
         navigate("/aptitudeInfo");
@@ -109,7 +108,6 @@ const RoundSelection = () => {
       alert("Failed to update user. Please try again.");
     }
   };
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

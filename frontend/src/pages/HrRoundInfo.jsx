@@ -9,6 +9,7 @@ export default function HRRoundInfo() {
   const navigate = useNavigate();
   const [candidatesEmail, setCandidatesEmails] = useState([]);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+  const VITE_FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
   const handleProceed = () => {
     if (isInstructionsRead) {
@@ -52,36 +53,35 @@ export default function HRRoundInfo() {
     // Retrieve candidate data (name and email) from localStorage
     const candidateData = candidatesEmail;
     console.log("Emails to be sent: ", candidateData);
-  
+
     const companyName = localStorage.getItem("companyName") || "Your Company";
     const HRemail = localStorage.getItem("email") || "hr@yourcompany.com";
-  
+
     // Check for aptitudeDuration or technicalDuration
     const aptitudeDuration = localStorage.getItem("aptitudeDuration");
     const technicalDuration = localStorage.getItem("technicalDuration");
-  
+
     // If no candidate data found in localStorage
     if (candidateData.length === 0) {
       alert("No candidate data found in localStorage");
       return;
     }
-  
+
     // Determine which test to send based on the available duration
     const duration = aptitudeDuration || technicalDuration;
     const testType = aptitudeDuration
       ? "Aptitude Test with Reasoning"
       : "Technical Test";
     const testLink = aptitudeDuration
-      ? `${BACKEND_URL}/quizRound`
-      : `${BACKEND_URL}/techRound`;
+      ? `${VITE_FRONTEND_URL}/quizRound`
+      : `${VITE_FRONTEND_URL}/techRound`;
     const subject = `${testType} Invitation for ${companyName}`;
-  
+
     // Function to delay execution for rate limiting
     const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-  
+
     try {
       for (const email of candidateData) {
-  
         const templateParams = {
           candidateName: "Candidate", // Since you only have emails, use a generic name
           user_id: localStorage.getItem("userId"),
@@ -101,18 +101,17 @@ export default function HRRoundInfo() {
         } catch (error) {
           console.error(`Error sending email to ${email}:`, error);
         }
-  
+
         // Delay between email sends to avoid rate limits (1 second in this example)
         await delay(800);
       }
-  
+
       alert("All emails sent successfully.");
     } catch (error) {
       console.error("Error sending emails:", error);
       alert("An error occurred while sending emails. Please try again.");
     }
   };
-  
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
