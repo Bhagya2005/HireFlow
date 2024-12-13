@@ -17,7 +17,7 @@ router.get("/getQuiz", async (req, res) => {
       }
       quizzes = user.allAptitudes; // Access the user's allAptitudes array
     } else {
-      // If userId is not provided, return all quizzes
+      // If userId is not provided,
       quizzes = await Quiz.find();
     }
 
