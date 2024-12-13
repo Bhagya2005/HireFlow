@@ -15,6 +15,7 @@ const QuizComponent = () => {
   const [hremail, setHremail] = useState("");
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+  const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
@@ -315,7 +316,7 @@ const QuizComponent = () => {
           candidate_name: name,
           hr_email: hremail,
           roundName: "Technical Round",
-          tech_link: `${BACKEND_URL}/techRound`,
+          tech_link: `${FRONTEND_URL}/techRound`,
           company_name: companyName,
           to_email: userEmail,
           recipient_address: email,

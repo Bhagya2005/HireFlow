@@ -50,7 +50,7 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
   const [error, setError] = useState("");
   const [candidateEmails, setCandidatesEmails] = useState([]);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-  const VITE_FRONTEND_URL = import.meta.env.VITE_VITE_FRONTEND_URL;
+  const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -460,6 +460,42 @@ const TechRound = () => {
       eventSource.close();
     };
   }, []);
+
+  const updateUser = async () => {
+    let userEmail = localStorage.getItem("technicalUserEmail");
+
+    const templateParams = {
+      jobRole: jobRole,
+      linkForNextRound: `${FRONTEND_URL}/hrRoundEntrance`,
+      companyName: companyName,
+      to_email: userEmail,
+    };
+
+    try {
+      await sendHREmail(templateParams);
+      console.log("Email sent successfully!");
+    } catch (emailError) {
+      console.error("Failed to send email:", emailError);
+    }
+
+    try {
+      const response = await axios.post(
+        `${BACKEND_URL}/updateUser`,
+        {
+          userEmail: userEmail,
+          userId: localStorage.getItem("technicalUserId"),
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      console.log(response);
+    } catch (err) {
+      console.error("Error:", err);
+      alert("An error occurred while scheduling the interview");
+    }
+  };
 
   // Update code in backend on change
   const handleCodeChange = async (newCode) => {
