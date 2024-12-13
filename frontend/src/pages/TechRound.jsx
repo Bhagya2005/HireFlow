@@ -309,7 +309,7 @@ const TechRound = () => {
       "Passing for tech : ",
       passingMarks,
       "CandidateSolved are : ",
-      techSolvedArr.length
+      currentlyScored
     );
 
     try {
@@ -317,12 +317,17 @@ const TechRound = () => {
       const response = await axios.post(`${BACKEND_URL}/updateUser`, {
         userId: localStorage.getItem("technicalUserId"),
         userEmail: localStorage.getItem("technicalUserEmail"),
-        technicalScore: techSolvedArr.length,
+        technicalScore: currentlyScored
       });
       console.log(
         "Round times updated successfully in backend...:",
         response.data
       );
+
+      if(response.data.message === "true") {
+        console.log("Send email to hr round");
+        
+      }
       // window.location.reload(true);
     } catch (error) {
       console.error("Error updating user:", error);
@@ -396,13 +401,14 @@ const TechRound = () => {
       }
 
       // Update user after submitting all problems
-      await updateUser();
+      handleEndSession()
     } catch (error) {
       console.error("Error submitting problems on time expiration:", error);
     }
 
     // You might want to add a modal or redirect logic here
     alert("Technical round time has expired!");
+    handleEndSession();
   };
 
   // Real-time code syncing using SSE
@@ -626,15 +632,7 @@ const TechRound = () => {
       console.log(response);
 
       if (response.data.cleanedResponse.success) {
-        setTechSolvedArr((prev) => {
-          if (!prev.includes(currentProblemIndex)) {
-            // Increment currentlyScored only if a new index is added
-            currentlyScored += 1;
-            console.log("incremented");
-            return [...prev, currentProblemIndex];
-          }
-          return prev;
-        });
+        currentlyScored += 1;
       }
 
       if (response.data) {
@@ -648,7 +646,6 @@ const TechRound = () => {
       }
 
       console.log(`Solved problems count: ${currentlyScored}`);
-      console.log(`TechSolvedArr length: ${techSolvedArr.length}`);
     } catch (error) {
       console.error(error);
       setError("An error occurred while executing the code");
