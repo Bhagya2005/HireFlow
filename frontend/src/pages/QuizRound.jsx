@@ -250,29 +250,23 @@ const QuizComponent = () => {
       (candidate) => candidate === email
     );
 
-    if (candidateExists) {
-      try {
-        setLoading(true);
-        const response = await axios.get(`${BACKEND_URL}/getQuiz`, {
-          params: { userId: userid },
-        });
-        console.log("Quiz Responses : ", response);
-        setExistingQuizzes(response.data);
-        setSubmitted(true);
-        setLoading(false);
+    try {
+      setLoading(true);
+      const response = await axios.get(`${BACKEND_URL}/getQuiz`, {
+        params: { userId: userid },
+      });
+      console.log("Quiz Responses : ", response);
+      setExistingQuizzes(response.data);
+      setSubmitted(true);
+      setLoading(false);
 
-        // Start timer when quiz begins
-        if (aptitudeTiming) {
-          startTimer(parseInt(aptitudeTiming));
-        }
-      } catch (err) {
-        setError("Failed to fetch quiz. Please try again.", err);
-        setLoading(false);
+      // Start timer when quiz begins
+      if (aptitudeTiming) {
+        startTimer(parseInt(aptitudeTiming));
       }
-    } else {
-      alert(
-        "Give correct email, which you have given while applying to this job."
-      );
+    } catch (err) {
+      setError("Failed to fetch quiz. Please try again.", err);
+      setLoading(false);
     }
   };
 
