@@ -24,6 +24,8 @@ const LANGUAGE_VERSIONS = {
   php: "8.2.3",
 };
 
+let currentlyScored = 0;
+
 const API = axios.create({
   baseURL: "https://emkc.org/api/v2/piston",
 });
@@ -259,56 +261,74 @@ const TechRound = () => {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [allowPaste, setAllowPaste] = useState(true);
   const [currentPage, setCurrentPage] = useState("entrance");
+  const [passingMarks, setpassingMarks] = useState("");
 
   const [showCheatingModal, setShowCheatingModal] = useState(false);
 
-  useEffect(() => {
-    const handlePaste = (e) => {
-      if (!isPasteAllowed) {
-        e.preventDefault();
-        alert("Pasting is disabled during the technical round.");
-      }
-    };
+  // useEffect(() => {
+  //   const handlePaste = (e) => {
+  //     if (!isPasteAllowed) {
+  //       e.preventDefault();
+  //       alert("Pasting is disabled during the technical round.");
+  //     }
+  //   };
 
-    // Add paste event listener to the document
-    document.addEventListener("paste", handlePaste);
+  //   // Add paste event listener to the document
+  //   document.addEventListener("paste", handlePaste);
 
-    // Cleanup event listener on component unmount
-    return () => {
-      document.removeEventListener("paste", handlePaste);
-    };
-  }, []);
-  useEffect(() => {
-    console.log("Current page is:", currentPage);
-  }, [currentPage]);
+  //   // Cleanup event listener on component unmount
+  //   return () => {
+  //     document.removeEventListener("paste", handlePaste);
+  //   };
+  // }, []);
+  // useEffect(() => {
+  //   const handleVisibilityChange = () => {
+  //     if (document.hidden) {
+  //       console.log(
+  //         "User has switched to another tab or minimized the browser."
+  //       );
+  //       setShowCheatingModal(true);
+  //     }
+  //   };
 
-  // const handlePaste = (e) => {
-  //   if (current === "main") {
-  //     e.preventDefault();
-  //     alert("Pasting is disabled during the technical round.");
-  //   }
-  // };
-  // document.addEventListener("paste", handlePaste);
-  useEffect(() => {
-    // Function to handle visibility change
+  //   // Add the event listener
+  //   document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        console.log(
-          "User has switched to another tab or minimized the browser."
-        );
-        setShowCheatingModal(true);
-      }
-    };
+  //   // Clean up the event listener on component unmount
+  //   return () => {
+  //     document.removeEventListener("visibilitychange", handleVisibilityChange);
+  //   };
+  // }, []);
 
-    // Add the event listener
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+  const handleEndSession = async () => {
+    alert(
+      "Do you really want to end this session, all your problems will be sent for checking?"
+    );
+    console.log("starthere");
+    console.log(
+      "Passing for tech : ",
+      passingMarks,
+      "CandidateSolved are : ",
+      techSolvedArr.length
+    );
 
-    // Clean up the event listener on component unmount
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
+    try {
+      // Make the API call and wait for the response
+      const response = await axios.post(`${BACKEND_URL}/updateUser`, {
+        userId: localStorage.getItem("technicalUserId"),
+        userEmail: localStorage.getItem("technicalUserEmail"),
+        technicalScore: techSolvedArr.length,
+      });
+      console.log(
+        "Round times updated successfully in backend...:",
+        response.data
+      );
+      // window.location.reload(true);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      alert("Failed to update user. Please try again.");
+    }
+  };
 
   // Fetch user info and set technical timing
   useEffect(() => {
@@ -332,6 +352,7 @@ const TechRound = () => {
         setIsTimerRunning(true);
         setjobRole(response.data.jobRole);
         setcompanyName(response.data.companyName);
+        setpassingMarks(response.data.technicalPassingMarks);
       } catch (error) {
         console.error("Error fetching user info:", error);
       }
@@ -602,27 +623,32 @@ const TechRound = () => {
         code: code,
       });
 
-      if (response.data.success) {
+      console.log(response);
+
+      if (response.data.cleanedResponse.success) {
         setTechSolvedArr((prev) => {
           if (!prev.includes(currentProblemIndex)) {
+            // Increment currentlyScored only if a new index is added
+            currentlyScored += 1;
+            console.log("incremented");
             return [...prev, currentProblemIndex];
           }
           return prev;
         });
       }
 
-      console.log(techSolvedArr);
-      if (techSolvedArr.length === problems.length) {
-        updateUser();
-      }
-
       if (response.data) {
-        setOutput(response.data.summary);
+        setOutput(
+          response.data.cleanedResponse.summary || "Evaluation successful"
+        );
         setError(null);
       } else {
         setError(response.data.error);
         setOutput("");
       }
+
+      console.log(`Solved problems count: ${currentlyScored}`);
+      console.log(`TechSolvedArr length: ${techSolvedArr.length}`);
     } catch (error) {
       console.error(error);
       setError("An error occurred while executing the code");
@@ -653,6 +679,16 @@ const TechRound = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
               {/* Existing navigation buttons */}
+              <button
+                onClick={handleEndSession}
+                className={`px-4 py-2 rounded-md transition-colors ${
+                  isDarkMode
+                    ? "bg-red-600 hover:bg-red-700 text-white"
+                    : "bg-red-700 hover:bg-red-800 text-white"
+                }`}
+              >
+                End Session
+              </button>
               {/* Timer Display */}
               <div
                 className={`flex items-center px-4 py-2 rounded-full ${

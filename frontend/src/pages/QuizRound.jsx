@@ -41,6 +41,21 @@ const QuizComponent = () => {
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [showCheatingModal, setShowCheatingModal] = useState(false);
 
+  const cheatingDetecedByUser = () => {
+    try {
+      console.log(userid, cheatComment, "image");
+      const response = axios.post(`${BACKEND_URL}/cheatingDetected`, {
+        email: userid,
+        comment: cheatComment,
+        cheatImage: "image 1",
+      });
+      console.log("Cheating response: ", response);
+      window.location.reload(true);
+    } catch (error) {
+      console.error("Error sending cheating email:", error);
+    }
+  };
+
   useEffect(() => {
     // Function to handle visibility change
 
@@ -478,9 +493,7 @@ const QuizComponent = () => {
             <div className="flex justify-center space-x-4">
               <button
                 onClick={() => {
-                  // Redirect to exit page or close the application
-                  window.location.reload();
-                  window.exit(); // or any exit route
+                  cheatingDetecedByUser();
                 }}
                 className="bg-red-600 text-white px-4 py-2 rounded-lg"
               >

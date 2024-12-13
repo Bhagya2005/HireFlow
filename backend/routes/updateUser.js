@@ -26,7 +26,10 @@ router.post("/updateUser", async (req, res) => {
     aptitudeTime,
     techTime,
     hrTime,
+    passingMarksofTech,
+    technicalScore,
   } = req.body;
+  console.log("Hiiii:", technicalScore);
 
   try {
     const user = await User.findById(userId);
@@ -37,6 +40,7 @@ router.post("/updateUser", async (req, res) => {
     // Update user details
     if (date) user.date = date;
     if (name) user.name = name;
+    if (passingMarksofTech) user.technicalPassingMarks = passingMarksofTech;
     if (companyName) user.companyName = companyName;
     if (jobrole) user.jobRole = jobrole;
     if (passingMarks) user.aptitudePassingMarks = passingMarks;
@@ -59,10 +63,16 @@ router.post("/updateUser", async (req, res) => {
     }
 
     // Check if tech passingMarks are set and if score meets/exceeds the passingMarks
-    if (!user.techPassesCandidates.includes(userEmail)) {
-      user.techPassesCandidates.push(userEmail); // Add email to passed candidates
+    if (technicalScore >= user.technicalPassingMarks) {
+      if (!user.techPassesCandidates.includes(userEmail)) {
+        console.log("passed");
+
+        user.techPassesCandidates.push(userEmail); // Add email to passed candidates
+      }
     } else {
       if (!user.techFailedCandidates.includes(userEmail)) {
+        console.log("failed");
+
         user.techFailedCandidates.push(userEmail); // Add email to failed candidates
       }
     }

@@ -142,7 +142,17 @@ export default function TechnicalInfo() {
       });
   };
 
-  const nextRound = () => {
+  const nextRound = async () => {
+    try {
+      const response = await axios.post(`${BACKEND_URL}/updateUser`, {
+        userId: localStorage.getItem("userId"), // Assume recruiter is logged in and we have their email
+        passingMarksofTech: passingMarks, // Send the array of candidate objects
+      });
+
+      console.log("updated passing marks in backend", response);
+    } catch (error) {
+      console.error("Error updating candidates:", error);
+    }
     const isHr = localStorage.getItem("hrRound");
 
     // Simulated POST request to add tech entries
@@ -553,6 +563,7 @@ export default function TechnicalInfo() {
           </div>
         )}
       </div>
+         
     </div>
   );
 }

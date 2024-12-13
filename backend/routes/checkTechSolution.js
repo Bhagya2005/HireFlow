@@ -41,7 +41,7 @@ router.post("/checkTechSolution", async (req, res) => {
 
     try {
       const cleanedResponse = JSON.parse(rawResponse.slice(7, -4));
-      res.status(200).json(cleanedResponse);
+      res.status(200).json({ success: true, cleanedResponse: cleanedResponse });
     } catch (parseError) {
       console.error("Error parsing response:", parseError);
       res.status(500).json({ success: false, error: "Invalid JSON response" });

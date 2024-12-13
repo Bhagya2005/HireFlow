@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  technicalPassingMarks: {
+    type: Number,
+    default: 0,
+  },
   aptitudePassesCandidates: {
     type: [String], // Array of email strings of users who passed the aptitude test
     default: [],
@@ -43,6 +47,8 @@ const userSchema = new mongoose.Schema({
   candidateData: {
     type: [
       {
+        cheatImage: { type: String },
+        cheatComment: { type: String },
         name: { type: String, required: true }, // Candidate's name
         email: { type: String, required: true }, // Candidate's email
       },
