@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
     type: [
       {
         name: { type: String, required: true }, // Candidate's name
-        email: { type: String, required: true, unique: true }, // Candidate's email
+        email: { type: String, required: true }, // Candidate's email
       },
     ],
     default: [],
