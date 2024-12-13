@@ -12,7 +12,7 @@ import axios from "axios";
 import sendHREmail from "../components/HRemail";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
+let currentPage = "entrance";
 const LANGUAGE_VERSIONS = {
   python: "3.10.0",
   javascript: "18.15.0",
@@ -46,10 +46,9 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
   const [candidateEmails, setCandidatesEmails] = useState([]);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       if (!userId.trim()) {
         console.error("No userId found.");
@@ -65,13 +64,15 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
         response.data.candidateData?.map((candidate) => candidate.email) || [];
       setCandidatesEmails(emails);
       console.log(candidateEmails);
-      
+
       console.log("Fetched candidate emails:", emails);
 
       // Check if the entered email exists
       const emailExists = emails.some(
         (candidateEmail) => candidateEmail === email
       );
+
+      currentPage = "main";
       if (!emailExists) {
         alert("Email does not exist. Please enter a valid email.");
         return;
@@ -97,10 +98,7 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
     localStorage.setItem("technicalUserId", userId);
     localStorage.setItem("technicalUserEmail", email);
 
-
     try {
-      console.log("Helloooooooooooooooo");
-
       const userId = localStorage.getItem("technicalUserId");
       if (!userId) {
         console.error("No userId found in localStorage.");
@@ -255,16 +253,66 @@ const TechRound = () => {
   const [jobRole, setjobRole] = useState("");
   const [companyName, setcompanyName] = useState("");
 
-  const [techTiming, setTechTiming] = useState(localStorage.getItem("techTime") || 0);
+  const [techTiming, setTechTiming] = useState(
+    localStorage.getItem("techTime") || 0
+  );
   const [remainingTime, setRemainingTime] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+
+  const [showCheatingModal, setShowCheatingModal] = useState(false);
+
+  useEffect(() => {
+    // Function to prevent paste actions
+    const handlePaste = (event) => {
+      event.preventDefault();
+      alert("You cannot paste anything");
+      console.log("Paste action is disabled.");
+    };
+
+    // Function to prevent Ctrl+V
+    const handleKeyDown = (event) => {
+      if (event.ctrlKey && event.key === "v") {
+        event.preventDefault();
+        alert("You cannot paste anything");
+        console.log("Ctrl+V is disabled.");
+      }
+    };
+
+    // Add event listeners
+    document.addEventListener("paste", handlePaste);
+    document.addEventListener("keydown", handleKeyDown);
+
+    // Clean up the event listeners
+    return () => {
+      document.removeEventListener("paste", handlePaste);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+  useEffect(() => {
+    // Function to handle visibility change
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && currentPage === "main") {
+        console.log(
+          "User has switched to another tab or minimized the browser."
+        );
+        setShowCheatingModal(true);
+      }
+    };
+
+    // Add the event listener
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Clean up the event listener on component unmount
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   // Fetch user info and set technical timing
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        console.log("Helloooooooooooooooo");
-
         const userId = localStorage.getItem("technicalUserId");
         if (!userId) {
           console.error("No userId found in localStorage.");
@@ -305,7 +353,7 @@ const TechRound = () => {
           return prevTime - 1;
         });
       }, 1000);
-    } 
+    }
 
     return () => clearInterval(interval);
   }, [isTimerRunning, remainingTime]);
@@ -833,6 +881,32 @@ const TechRound = () => {
           </div>
         </div>
       </div>
+
+      {showCheatingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg text-center">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">
+              Cheating Detected
+            </h2>
+            <p className="mb-6">
+              You have been detected switching tabs or minimizing the browser
+              during the technical round.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => {
+                  // Redirect to exit page or close the application
+                  window.location.reload();
+                  window.exit();
+                }}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg"
+              >
+                Exit, You have been rejected
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

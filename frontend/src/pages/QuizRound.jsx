@@ -5,6 +5,8 @@ import sendRejectionEmail from "../components/RejectionEmail";
 import "../index.css";
 import * as faceapi from "face-api.js";
 
+let currentPage = "entrance";
+
 const QuizComponent = () => {
   const [userid, setuserid] = useState("");
   const [email, setemail] = useState("");
@@ -37,6 +39,28 @@ const QuizComponent = () => {
   // New state for timer
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [showCheatingModal, setShowCheatingModal] = useState(false);
+
+  useEffect(() => {
+    // Function to handle visibility change
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && currentPage === "main") {
+        console.log(
+          "User has switched to another tab or minimized the browser."
+        );
+        setShowCheatingModal(true);
+      }
+    };
+
+    // Add the event listener
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Clean up the event listener on component unmount
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   useEffect(() => {
     startVideo();
@@ -140,6 +164,7 @@ const QuizComponent = () => {
   const startTimer = (minutes) => {
     setTimeRemaining(minutes * 60); // Convert minutes to seconds
     setIsTimerActive(true);
+    currentPage = "main";
   };
 
   // Timer effect to countdown and auto-submit when time is up
@@ -438,6 +463,32 @@ const QuizComponent = () => {
         </>
       ) : (
         <p>No quizzes available</p>
+      )}
+
+      {showCheatingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg text-center">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">
+              Cheating Detected
+            </h2>
+            <p className="mb-6">
+              You have been detected switching tabs or minimizing the browser
+              during the technical round.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => {
+                  // Redirect to exit page or close the application
+                  window.location.reload();
+                  window.exit(); // or any exit route
+                }}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg"
+              >
+                You have been rejected, Exit
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
