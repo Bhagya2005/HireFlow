@@ -10,9 +10,8 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import sendHREmail from "../components/HRemail";
-
+let current = "entrance";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-let currentPage = "entrance";
 const LANGUAGE_VERSIONS = {
   python: "3.10.0",
   javascript: "18.15.0",
@@ -37,6 +36,8 @@ const executeCode = async (language, sourceCode) => {
   });
   return response.data;
 };
+
+let isPasteAllowed = true;
 
 const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
   const [name, setName] = useState("");
@@ -63,16 +64,12 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
       const emails =
         response.data.candidateData?.map((candidate) => candidate.email) || [];
       setCandidatesEmails(emails);
-      console.log(candidateEmails);
-
-      console.log("Fetched candidate emails:", emails);
 
       // Check if the entered email exists
       const emailExists = emails.some(
         (candidateEmail) => candidateEmail === email
       );
 
-      currentPage = "main";
       if (!emailExists) {
         alert("Email does not exist. Please enter a valid email.");
         return;
@@ -98,6 +95,9 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
     localStorage.setItem("technicalUserId", userId);
     localStorage.setItem("technicalUserEmail", email);
 
+    // Disable paste when technical round starts
+    isPasteAllowed = false;
+
     try {
       const userId = localStorage.getItem("technicalUserId");
       if (!userId) {
@@ -106,8 +106,6 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
       }
 
       const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
-
-      console.log("All backend data : ", response.data);
 
       const techTime = response.data.techTime || 0;
       localStorage.setItem("techTime", techTime);
@@ -221,7 +219,8 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
             </div>
           )}
           <button
-            type="submit"
+            // type="submit"
+            // onClick={startTechRound}
             className={`w-full p-3 rounded-lg transition-colors ${
               isDarkMode
                 ? "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
@@ -249,50 +248,52 @@ const TechRound = () => {
   const [loading, setLoading] = useState(true);
   const [techSolvedArr, setTechSolvedArr] = useState([]);
   const [codeStore, setCodeStore] = useState({});
-  const [showUserInfoDialog, setShowUserInfoDialog] = useState(true);
   const [jobRole, setjobRole] = useState("");
   const [companyName, setcompanyName] = useState("");
+  const [showUserInfoDialog, setShowUserInfoDialog] = useState(true);
 
   const [techTiming, setTechTiming] = useState(
     localStorage.getItem("techTime") || 0
   );
   const [remainingTime, setRemainingTime] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [allowPaste, setAllowPaste] = useState(true);
+  const [currentPage, setCurrentPage] = useState("entrance");
 
   const [showCheatingModal, setShowCheatingModal] = useState(false);
 
   useEffect(() => {
-    // Function to prevent paste actions
-    const handlePaste = (event) => {
-      event.preventDefault();
-      alert("You cannot paste anything");
-      console.log("Paste action is disabled.");
-    };
-
-    // Function to prevent Ctrl+V
-    const handleKeyDown = (event) => {
-      if (event.ctrlKey && event.key === "v") {
-        event.preventDefault();
-        alert("You cannot paste anything");
-        console.log("Ctrl+V is disabled.");
+    const handlePaste = (e) => {
+      if (!isPasteAllowed) {
+        e.preventDefault();
+        alert("Pasting is disabled during the technical round.");
       }
     };
 
-    // Add event listeners
+    // Add paste event listener to the document
     document.addEventListener("paste", handlePaste);
-    document.addEventListener("keydown", handleKeyDown);
 
-    // Clean up the event listeners
+    // Cleanup event listener on component unmount
     return () => {
       document.removeEventListener("paste", handlePaste);
-      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+  useEffect(() => {
+    console.log("Current page is:", currentPage);
+  }, [currentPage]);
+
+  // const handlePaste = (e) => {
+  //   if (current === "main") {
+  //     e.preventDefault();
+  //     alert("Pasting is disabled during the technical round.");
+  //   }
+  // };
+  // document.addEventListener("paste", handlePaste);
   useEffect(() => {
     // Function to handle visibility change
 
     const handleVisibilityChange = () => {
-      if (document.hidden && currentPage === "main") {
+      if (document.hidden) {
         console.log(
           "User has switched to another tab or minimized the browser."
         );
