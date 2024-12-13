@@ -7,6 +7,7 @@ import {
   Moon,
   ChevronLeft,
   ChevronRight,
+  XCircle,
 } from "lucide-react";
 import axios from "axios";
 import sendHREmail from "../components/HRemail";
@@ -263,42 +264,44 @@ const TechRound = () => {
   const [currentPage, setCurrentPage] = useState("entrance");
   const [passingMarks, setpassingMarks] = useState("");
 
+  const [testCaseResults, setTestCaseResults] = useState([]);
+
   const [showCheatingModal, setShowCheatingModal] = useState(false);
 
-  // useEffect(() => {
-  //   const handlePaste = (e) => {
-  //     if (!isPasteAllowed) {
-  //       e.preventDefault();
-  //       alert("Pasting is disabled during the technical round.");
-  //     }
-  //   };
+  useEffect(() => {
+    const handlePaste = (e) => {
+      if (!isPasteAllowed) {
+        e.preventDefault();
+        alert("Pasting is disabled during the technical round.");
+      }
+    };
 
-  //   // Add paste event listener to the document
-  //   document.addEventListener("paste", handlePaste);
+    // Add paste event listener to the document
+    document.addEventListener("paste", handlePaste);
 
-  //   // Cleanup event listener on component unmount
-  //   return () => {
-  //     document.removeEventListener("paste", handlePaste);
-  //   };
-  // }, []);
-  // useEffect(() => {
-  //   const handleVisibilityChange = () => {
-  //     if (document.hidden) {
-  //       console.log(
-  //         "User has switched to another tab or minimized the browser."
-  //       );
-  //       setShowCheatingModal(true);
-  //     }
-  //   };
+    // Cleanup event listener on component unmount
+    return () => {
+      document.removeEventListener("paste", handlePaste);
+    };
+  }, []);
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && !isPasteAllowed) {
+        console.log(
+          "User has switched to another tab or minimized the browser."
+        );
+        setShowCheatingModal(true);
+      }
+    };
 
-  //   // Add the event listener
-  //   document.addEventListener("visibilitychange", handleVisibilityChange);
+    // Add the event listener
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
-  //   // Clean up the event listener on component unmount
-  //   return () => {
-  //     document.removeEventListener("visibilitychange", handleVisibilityChange);
-  //   };
-  // }, []);
+    // Clean up the event listener on component unmount
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   const handleEndSession = async () => {
     alert(
@@ -317,16 +320,15 @@ const TechRound = () => {
       const response = await axios.post(`${BACKEND_URL}/updateUser`, {
         userId: localStorage.getItem("technicalUserId"),
         userEmail: localStorage.getItem("technicalUserEmail"),
-        technicalScore: currentlyScored
+        technicalScore: currentlyScored,
       });
       console.log(
         "Round times updated successfully in backend...:",
         response.data
       );
 
-      if(response.data.message === "true") {
+      if (response.data.message === "true") {
         console.log("Send email to hr round");
-        
       }
       // window.location.reload(true);
     } catch (error) {
@@ -401,7 +403,7 @@ const TechRound = () => {
       }
 
       // Update user after submitting all problems
-      handleEndSession()
+      handleEndSession();
     } catch (error) {
       console.error("Error submitting problems on time expiration:", error);
     }
@@ -474,6 +476,7 @@ const TechRound = () => {
           headers: { "Content-Type": "application/json" },
         });
         setProblems(response.data.techEntries || []);
+        console.log("Tech data: ", response.data);
 
         // Initialize code store for all problems
         const initialCodeStore = {};
@@ -495,10 +498,27 @@ const TechRound = () => {
     setIsRunning(true);
     setError(null);
     setOutput("");
+    setTestCaseResults([]);
 
     try {
       const result = await executeCode(selectedLanguage, code);
-      setOutput(result.run.output || "No output");
+      const output = result.run.output || "No output";
+      setOutput(output);
+
+      // Check test cases if they exist for the current problem
+      if (currentProblem.testCases && currentProblem.testCases.length > 0) {
+        const results = currentProblem.testCases.map((testCase) => {
+          // Simple exact match comparison
+          const isCorrect = output.trim() === testCase.expectedOutput.trim();
+          return {
+            input: testCase.input,
+            expectedOutput: testCase.expectedOutput,
+            actualOutput: output,
+            isCorrect,
+          };
+        });
+        setTestCaseResults(results);
+      }
     } catch (err) {
       setError(err.message || "An error occurred while executing the code");
     } finally {
@@ -826,7 +846,6 @@ const TechRound = () => {
                 {isRunning ? "Running..." : "Run Code"}
               </button>
             </div>
-
             <div
               className={`rounded-lg overflow-hidden flex-1 ${
                 isDarkMode
@@ -849,69 +868,159 @@ const TechRound = () => {
             </div>
           </div>
 
-          {/* Output Panel */}
-          <div
-            className={`rounded-xl shadow-lg p-4 ${
-              isDarkMode
-                ? "bg-gray-800/80 border border-gray-700"
-                : "bg-white/90 border border-gray-200"
-            }`}
-          >
-            <h2
-              className={`text-xl font-semibold mb-4 ${
+          {/* Output and Test Cases Panel */}
+          <div className="flex gap-4 h-[250px]">
+            {/* Output Panel */}
+            <div
+              className={`w-1/2 rounded-xl shadow-lg p-4 ${
                 isDarkMode
-                  ? "text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400"
-                  : "text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600"
+                  ? "bg-gray-800/80 border border-gray-700"
+                  : "bg-white/90 border border-gray-200"
               }`}
             >
-              Output
-            </h2>
-
-            {error && (
-              <div
-                className={`mb-4 p-4 rounded-lg ${
+              <h2
+                className={`text-xl font-semibold mb-4 ${
                   isDarkMode
-                    ? "bg-red-900/50 border-red-700"
-                    : "bg-red-100 border-red-200"
+                    ? "text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400"
+                    : "text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-600"
                 }`}
               >
-                <div className="flex items-center">
-                  <AlertCircle
-                    className={`h-4 w-4 ${
-                      isDarkMode ? "text-red-400" : "text-red-600"
-                    }`}
-                  />
-                  <div
-                    className={`ml-2 font-semibold ${
-                      isDarkMode ? "text-red-400" : "text-red-600"
-                    }`}
-                  >
-                    Error
-                  </div>
-                </div>
+                Output
+              </h2>
+
+              {error && (
                 <div
-                  className={`mt-2 ${
-                    isDarkMode ? "text-red-200" : "text-red-700"
+                  className={`mb-4 p-4 rounded-lg ${
+                    isDarkMode
+                      ? "bg-red-900/50 border-red-700"
+                      : "bg-red-100 border-red-200"
                   }`}
                 >
-                  {error}
+                  <div className="flex items-center">
+                    <AlertCircle
+                      className={`h-4 w-4 ${
+                        isDarkMode ? "text-red-400" : "text-red-600"
+                      }`}
+                    />
+                    <div
+                      className={`ml-2 font-semibold ${
+                        isDarkMode ? "text-red-400" : "text-red-600"
+                      }`}
+                    >
+                      Error
+                    </div>
+                  </div>
+                  <div
+                    className={`mt-2 ${
+                      isDarkMode ? "text-red-200" : "text-red-700"
+                    }`}
+                  >
+                    {error}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <pre
-              className={`p-4 rounded-lg h-32 overflow-auto font-mono text-sm ${
+              <pre
+                className={`p-4 rounded-lg h-32 overflow-auto font-mono text-sm ${
+                  isDarkMode
+                    ? "bg-gray-900/50 border border-gray-700 text-gray-200"
+                    : "bg-gray-50 border border-gray-300 text-gray-800"
+                }`}
+                style={{
+                  whiteSpace: "normal",
+                  overflowWrap: "break-word",
+                }}
+              >
+                {output || "Run your code to see the output here..."}
+              </pre>
+            </div>
+
+            {/* Test Cases Panel */}
+            <div
+              className={`w-1/2 rounded-xl shadow-lg p-4 overflow-auto ${
                 isDarkMode
-                  ? "bg-gray-900/50 border border-gray-700 text-gray-200"
-                  : "bg-gray-50 border border-gray-300 text-gray-800"
+                  ? "bg-gray-800/80 border border-gray-700"
+                  : "bg-white/90 border border-gray-200"
               }`}
-              style={{
-                whiteSpace: "normal", // Allow wrapping
-                overflowWrap: "break-word", // Break long words if needed
-              }}
             >
-              {output || "Run your code to see the output here..."}
-            </pre>
+              <h2
+                className={`text-xl font-semibold mb-4 ${
+                  isDarkMode
+                    ? "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400"
+                    : "text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
+                }`}
+              >
+                Test Cases
+              </h2>
+
+              {currentProblem.testCases &&
+              currentProblem.testCases.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {currentProblem.testCases.map((testCase, index) => (
+                    <div
+                      key={index}
+                      className={`p-3 rounded-lg border ${
+                        isDarkMode
+                          ? "bg-gray-900/50 border-gray-700"
+                          : "bg-gray-50 border-gray-300"
+                      }`}
+                    >
+                      <div className="flex justify-between items-center mb-2">
+                        <span
+                          className={`font-semibold ${
+                            isDarkMode ? "text-gray-300" : "text-gray-700"
+                          }`}
+                        >
+                          Test Case {index + 1}
+                        </span>
+                        {testCaseResults[index] &&
+                          (testCaseResults[index].isCorrect ? (
+                            <CheckCircle2 className="text-green-500 h-5 w-5" />
+                          ) : (
+                            <XCircle className="text-red-500 h-5 w-5" />
+                          ))}
+                      </div>
+                      <div
+                        className={`mb-2 ${
+                          isDarkMode ? "text-gray-400" : "text-gray-600"
+                        }`}
+                      >
+                        <span className="font-medium">Input:</span>{" "}
+                        {testCase.input}
+                      </div>
+                      <div
+                        className={`mb-2 ${
+                          isDarkMode ? "text-gray-400" : "text-gray-600"
+                        }`}
+                      >
+                        <span className="font-medium">Expected:</span>{" "}
+                        {testCase.expectedOutput}
+                      </div>
+                      {testCaseResults[index] && (
+                        <div
+                          className={`${
+                            testCaseResults[index].isCorrect
+                              ? "text-green-500"
+                              : "text-red-500"
+                          }`}
+                        >
+                          <span className="font-medium">Actual:</span>{" "}
+                          {testCaseResults[index].actualOutput}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div
+                  className={`text-center py-8 ${
+                    isDarkMode ? "text-gray-500" : "text-gray-400"
+                  }`}
+                >
+                  No test cases available for this problem
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

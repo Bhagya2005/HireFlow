@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/userModel"); // User model to fetch tech problems
 
+// Route to fetch tech problems
 router.get("/getTech", async (req, res) => {
   const { userId } = req.query; // Get the userId from query parameters
 
@@ -17,6 +18,8 @@ router.get("/getTech", async (req, res) => {
       }
 
       // Return the tech problems related to this user
+
+      console.log("user: ", user.allTechProblems);
       return res
         .status(200)
         .json({ success: true, techEntries: user.allTechProblems });

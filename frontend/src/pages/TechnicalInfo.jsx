@@ -104,6 +104,7 @@ export default function TechnicalInfo() {
         console.log(response);
         setShowGeneratedProblems(true);
         setGeneratedProblems(response.data);
+        console.log("genratedProblems: ", generatedProblems);
         setLoader(false);
       })
       .catch((error) => {
@@ -155,6 +156,8 @@ export default function TechnicalInfo() {
     }
     const isHr = localStorage.getItem("hrRound");
 
+    console.log("burH: ", selectedProblems);
+
     // Simulated POST request to add tech entries
     fetch(`${BACKEND_URL}/addTech`, {
       method: "POST",
@@ -166,6 +169,7 @@ export default function TechnicalInfo() {
         problems: selectedProblems.map((problem) => ({
           title: problem.title,
           desc: problem.desc,
+          testCases: JSON.stringify(problem.testCases),
         })),
       }),
     })
@@ -175,17 +179,19 @@ export default function TechnicalInfo() {
         }
         return response.json();
       })
-      .then((data) => {})
+      .then((data) => {
+        console.log("Tech entries submitted:", data.user);
+      })
       .catch((error) => {
         console.error("Error submitting tech entries:", error);
       });
 
     // Navigation simulation
-    if (isHr === "true") {
-      window.location.href = "/hrInfo";
-    } else {
-      window.location.href = "/dashboard";
-    }
+    // if (isHr === "true") {
+    //   window.location.href = "/hrInfo";
+    // } else {
+    //   window.location.href = "/dashboard";
+    // }
   };
 
   useEffect(() => {

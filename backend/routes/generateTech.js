@@ -12,16 +12,27 @@ Generate a set of 6 technical interview questions on {{techType}} DSA problems. 
   - Output format.
   - Example with input and output.
   - Constraints for the problem.
-  
-Format the description as a single string with line breaks and spaces for readability.
+- Two test cases with:
+  - A sample input for the problem.
+  - The expected output for the provided input.
 
+Format the description as a single string with line breaks and spaces for readability.
 Return the set of problems as an array of objects in JSON format, where each object follows this structure:
 {
   "id": "unique problem ID",
   "title": "Problem title",
-  "desc": "Detailed problem description with proper formatting"
-}
-`;
+  "desc": "Detailed problem description with proper formatting",
+  "testCases": [
+    {
+      "input": "Sample input",
+      "expectedOutput": "Expected output"
+    },
+    {
+      "input": "Sample input",
+      "expectedOutput": "Expected output"
+    }
+  ]
+}`;
 
 router.get("/generateTech", async (req, res) => {
   const techType = req.query.techType;
@@ -32,8 +43,9 @@ router.get("/generateTech", async (req, res) => {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const typeAddOnPrompt = addOnPrompt.replace("{{techType}}", techType);
     const result = await model.generateContent(typeAddOnPrompt);
-    const rawResponse = await result.response.text(); // Get the raw response text
 
+    // Extract and parse the raw response
+    const rawResponse = await result.response.text();
     const cleanedResponse = rawResponse.slice(7, -4).trim();
     const responseText = JSON.parse(cleanedResponse);
 
