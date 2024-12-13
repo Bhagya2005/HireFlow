@@ -215,38 +215,33 @@ const QuizComponent = () => {
       .padStart(2, "0")}`;
   };
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const userId = userid;
-        if (!userId) {
-          console.error("No userId found in localStorage.");
-          return;
-        }
-
-        const response = await axios.get(
-          `${BACKEND_URL}/getUserInfo/${userId}`
-        );
-        console.log("Dashboard data:", response.data);
-        setJobrole(response.data.jobRole);
-        setHremail(response.data.email);
-        setAptitudeTiming(response.data.aptitudeTime);
-        setCandidatesEmails(response.data.candidateData);
-
-        const emails =
-          response.data.candidateData?.map((candidate) => candidate.email) ||
-          [];
-        setCandidatesEmails(emails);
-      } catch (error) {
-        console.error("Error fetching user info:", error);
+  const fetchUserInfo = async () => {
+    try {
+      const userId = userid;
+      if (!userId) {
+        console.error("No userId found in localStorage.");
+        return;
       }
-    };
 
-    fetchUserInfo();
-  }, []);
+      const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
+      console.log("Dashboard data:", response.data);
+      setJobrole(response.data.jobRole);
+      setHremail(response.data.email);
+      setAptitudeTiming(response.data.aptitudeTime);
+      setCandidatesEmails(response.data.candidateData);
+
+      const emails =
+        response.data.candidateData?.map((candidate) => candidate.email) || [];
+      setCandidatesEmails(emails);
+    } catch (error) {
+      console.error("Error fetching user info:", error);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    await fetchUserInfo();
+
     setScore(0); // Reset score before starting the quiz
 
     const candidateData = candidatesEmail;
