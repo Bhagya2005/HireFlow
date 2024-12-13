@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   XCircle,
+  CheckCircle2,
 } from "lucide-react";
 import axios from "axios";
 import sendHREmail from "../components/HRemail";
@@ -268,40 +269,40 @@ const TechRound = () => {
 
   const [showCheatingModal, setShowCheatingModal] = useState(false);
 
-  useEffect(() => {
-    const handlePaste = (e) => {
-      if (!isPasteAllowed) {
-        e.preventDefault();
-        alert("Pasting is disabled during the technical round.");
-      }
-    };
+  // useEffect(() => {
+  //   const handlePaste = (e) => {
+  //     if (!isPasteAllowed) {
+  //       e.preventDefault();
+  //       alert("Pasting is disabled during the technical round.");
+  //     }
+  //   };
 
-    // Add paste event listener to the document
-    document.addEventListener("paste", handlePaste);
+  //   // Add paste event listener to the document
+  //   document.addEventListener("paste", handlePaste);
 
-    // Cleanup event listener on component unmount
-    return () => {
-      document.removeEventListener("paste", handlePaste);
-    };
-  }, []);
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden && !isPasteAllowed) {
-        console.log(
-          "User has switched to another tab or minimized the browser."
-        );
-        setShowCheatingModal(true);
-      }
-    };
+  //   // Cleanup event listener on component unmount
+  //   return () => {
+  //     document.removeEventListener("paste", handlePaste);
+  //   };
+  // }, []);
+  // useEffect(() => {
+  //   const handleVisibilityChange = () => {
+  //     if (document.hidden && !isPasteAllowed) {
+  //       console.log(
+  //         "User has switched to another tab or minimized the browser."
+  //       );
+  //       setShowCheatingModal(true);
+  //     }
+  //   };
 
-    // Add the event listener
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+  //   // Add the event listener
+  //   document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Clean up the event listener on component unmount
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
+  //   // Clean up the event listener on component unmount
+  //   return () => {
+  //     document.removeEventListener("visibilitychange", handleVisibilityChange);
+  //   };
+  // }, []);
 
   const handleEndSession = async () => {
     alert(
@@ -329,6 +330,19 @@ const TechRound = () => {
 
       if (response.data.message === "true") {
         console.log("Send email to hr round");
+        const templateParams = {
+          jobRole: jobRole,
+          linkForNextRound: ` ${BACKEND_URL}/hrRoundEntrance`,
+          companyName: companyName,
+          to_email: localStorage.getItem("technicalUserEmail"),
+        };
+
+        try {
+          await sendHREmail(templateParams);
+          console.log("Email sent successfully!");
+        } catch (emailError) {
+          console.error("Failed to send email:", emailError);
+        }
       }
       // window.location.reload(true);
     } catch (error) {
@@ -386,6 +400,26 @@ const TechRound = () => {
 
     return () => clearInterval(interval);
   }, [isTimerRunning, remainingTime]);
+
+  const handleTestCases = (currentProblem, output) => {
+    if (!currentProblem.testCases || currentProblem.testCases.length === 0) {
+      return [];
+    }
+
+    return currentProblem.testCases.map((testCase) => {
+      const isCorrect = compareTestCaseOutputs(
+        testCase.expectedOutput.toString(),
+        output.toString()
+      );
+
+      return {
+        input: testCase.input,
+        expectedOutput: testCase.expectedOutput,
+        actualOutput: output,
+        isCorrect,
+      };
+    });
+  };
 
   const handleTimeExpired = async () => {
     // Attempt to submit all solved problems
@@ -475,12 +509,18 @@ const TechRound = () => {
           params: { userId: localStorage.getItem("technicalUserId") },
           headers: { "Content-Type": "application/json" },
         });
-        setProblems(response.data.techEntries || []);
-        console.log("Tech data: ", response.data);
+
+        // Filter out empty problems and ensure we have valid problem objects
+        const validProblems = response.data.techEntries.filter(
+          (problem) => problem && typeof problem === "object" && problem.title
+        );
+
+        setProblems(validProblems);
+        console.log("Tech data: ", validProblems);
 
         // Initialize code store for all problems
         const initialCodeStore = {};
-        response.data.techEntries.forEach((_, index) => {
+        validProblems.forEach((_, index) => {
           initialCodeStore[index] = "";
         });
         setCodeStore(initialCodeStore);
@@ -505,25 +545,62 @@ const TechRound = () => {
       const output = result.run.output || "No output";
       setOutput(output);
 
-      // Check test cases if they exist for the current problem
-      if (currentProblem.testCases && currentProblem.testCases.length > 0) {
-        const results = currentProblem.testCases.map((testCase) => {
-          // Simple exact match comparison
-          const isCorrect = output.trim() === testCase.expectedOutput.trim();
-          return {
-            input: testCase.input,
-            expectedOutput: testCase.expectedOutput,
-            actualOutput: output,
-            isCorrect,
-          };
-        });
-        setTestCaseResults(results);
-      }
+      // Use the new test case handling logic
+      const results = handleTestCases(currentProblem, output);
+      setTestCaseResults(results);
+
+      // Check if all test cases pass
+      const allTestCasesPassed = results.every((result) => result.isCorrect);
+
+      // Optionally, you can add additional logic here for handling all test cases passing
     } catch (err) {
       setError(err.message || "An error occurred while executing the code");
     } finally {
       setIsRunning(false);
     }
+  };
+
+  const compareTestCaseOutputs = (expectedOutput, actualOutput) => {
+    // Trim both outputs
+    const trimmedExpected = expectedOutput.trim();
+    const trimmedActual = actualOutput.trim();
+
+    // Check if the outputs are equal after trimming
+    if (trimmedExpected === trimmedActual) {
+      return true;
+    }
+
+    // Try parsing as numbers
+    const numExpected = Number(trimmedExpected);
+    const numActual = Number(trimmedActual);
+    if (!isNaN(numExpected) && !isNaN(numActual) && numExpected === numActual) {
+      return true;
+    }
+
+    // Try parsing as floats with precision check
+    const floatExpected = parseFloat(trimmedExpected);
+    const floatActual = parseFloat(trimmedActual);
+    if (!isNaN(floatExpected) && !isNaN(floatActual)) {
+      // Check if the difference is very small (accounting for floating-point precision)
+      return Math.abs(floatExpected - floatActual) < 1e-9;
+    }
+
+    // Optional: Handle array-like outputs
+    const normalizeArrayOutput = (output) => {
+      return output
+        .replace(/[\[\]]/g, "") // Remove square brackets
+        .replace(/\s+/g, " ") // Normalize whitespace
+        .trim()
+        .split(" ")
+        .map((item) => item.trim())
+        .filter((item) => item !== "")
+        .join(" ");
+    };
+
+    const normalizedExpected = normalizeArrayOutput(trimmedExpected);
+    const normalizedActual = normalizeArrayOutput(trimmedActual);
+
+    return normalizedExpected === normalizedActual;
   };
 
   const formatTime = (timeInSeconds) => {
@@ -533,12 +610,15 @@ const TechRound = () => {
   };
 
   const formatDescription = (desc) => {
+    if (!desc) return null;
+
     return desc.split("\n").map((line, index) => {
-      const isExample = line.trim().toLowerCase().startsWith("example");
-      const isConstraint = line.trim().toLowerCase().startsWith("constraints");
-      const isInput = line.trim().toLowerCase().startsWith("input:");
-      const isOutput = line.trim().toLowerCase().startsWith("output:");
-      const isBulletPoint = line.trim().startsWith("•");
+      const trimmedLine = line.trim();
+      const isExample = trimmedLine.toLowerCase().startsWith("example");
+      const isConstraint = trimmedLine.toLowerCase().startsWith("constraints");
+      const isInput = trimmedLine.toLowerCase().startsWith("input:");
+      const isOutput = trimmedLine.toLowerCase().startsWith("output:");
+      const isBulletPoint = trimmedLine.startsWith("•");
 
       const className = `mb-2 ${
         isDarkMode
@@ -576,13 +656,16 @@ const TechRound = () => {
 
       return (
         <p key={index} className={className}>
-          {line.trim()}
+          {trimmedLine}
         </p>
       );
     });
   };
 
   const handleProblemChange = (newIndex) => {
+    // Ensure newIndex is within valid range
+    if (newIndex < 0 || newIndex >= problems.length) return;
+
     // Save current code to store
     setCodeStore((prev) => ({
       ...prev,
@@ -592,7 +675,7 @@ const TechRound = () => {
     // Set new problem index
     setCurrentProblemIndex(newIndex);
 
-    // Load code for new problem
+    // Load code for new problem, defaulting to empty string if undefined
     setCode(codeStore[newIndex] || "");
 
     // Reset output and error
@@ -622,6 +705,18 @@ const TechRound = () => {
         }`}
       >
         Loading problems...
+      </div>
+    );
+  }
+
+  if (!problems || problems.length === 0) {
+    return (
+      <div
+        className={`min-h-screen flex items-center justify-center ${
+          isDarkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-800"
+        }`}
+      >
+        No problems found. Please contact support.
       </div>
     );
   }

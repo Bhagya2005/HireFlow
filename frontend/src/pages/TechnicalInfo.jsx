@@ -152,39 +152,78 @@ export default function TechnicalInfo() {
 
       console.log("updated passing marks in backend", response);
     } catch (error) {
-      console.error("Error updating candidates:", error);
+      console.log("Error updating candidates:", error);
     }
     const isHr = localStorage.getItem("hrRound");
 
     console.log("burH: ", selectedProblems);
+    /*selectedProblems : {
+      burH:  
+(2) [{…}, {…}]
+0
+: 
+desc
+: 
+"Problem statement: Given a string, determine if it is a palindrome (reads the same forwards and backward).\nInput format: A single string s.\nOutput format: true if it's a palindrome, false otherwise.\nExample:\nInput:  \"racecar\"\nOutput: true\nConstraints: 1 <= length(s) <= 1000. The string consists of only lowercase English letters."
+id
+: 
+"STR-002"
+testCases
+: 
+Array(2)
+0
+: 
+{input: 'madam', expectedOutput: true}
+1
+: 
+{input: 'hello', expectedOutput: false}
+length
+: 
+2
+[[Prototype]]
+: 
+Array(0)
+title
+: 
+"Palindrome Check"
+[[Prototype]]
+: 
+Object
+1
+: 
+desc
+: 
+"Problem statement: Given a string, reverse it.\nInput format: A single string s.\nOutput format: The reversed string.\nExample:\nInput:  \"hello\"\nOutput: \"olleh\"\nConstraints: 1 <= length(s) <= 1000. The string consists of only lowercase English letters."
+id
+: 
+"STR-001"
+testCases
+: 
+Array(2)
+0
+: 
+{input: 'world', expectedOutput: 'dlrow'}
+1
+: 
+{input: 'coding', expectedOutput: 'gnidoc'}
+len
+    }*/
+
+    try {
+      const response = await axios.post(`${BACKEND_URL}/addTech`, {
+        problems: JSON.stringify({ problems: selectedProblems }),
+        userId: localStorage.getItem("userId"),
+      });
+
+      console.log(response.data);
+
+      console.log("Tech problems added:", response.data);
+    } catch (error) {
+      console.error("Error adding tech problems:", error);
+      setError("There was an error adding the tech problems.");
+    }
 
     // Simulated POST request to add tech entries
-    fetch(`${BACKEND_URL}/addTech`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userId: localStorage.getItem("userId"),
-        problems: selectedProblems.map((problem) => ({
-          title: problem.title,
-          desc: problem.desc,
-          testCases: JSON.stringify(problem.testCases),
-        })),
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to submit tech entries");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Tech entries submitted:", data.user);
-      })
-      .catch((error) => {
-        console.error("Error submitting tech entries:", error);
-      });
 
     // Navigation simulation
     // if (isHr === "true") {
@@ -358,11 +397,11 @@ export default function TechnicalInfo() {
                 >
                   <h3 className="font-semibold mb-2">{problem.title}</h3>
                   <p className="text-sm mb-2 text-gray-600 whitespace-pre-wrap">
-                    {problem.desc.length > 200
+                    {problem.desc?.length > 200
                       ? `${problem.desc.substring(0, 200)}...`
                       : problem.desc}
                   </p>
-                  {selectedProblems.some((p) => p.id === problem.id) && (
+                  {selectedProblems?.some((p) => p.id === problem.id) && (
                     <div className="mt-2 text-purple-600 text-sm">
                       ✓ Selected
                     </div>

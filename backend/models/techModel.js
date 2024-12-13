@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+// Define each tech schema
 const eachTechSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -9,7 +10,9 @@ const eachTechSchema = new mongoose.Schema({
   desc: { type: String, required: true },
 });
 
-const techSchema = new mongoose.Schema([eachTechSchema]);
+// Define the tech schema that embeds eachTechSchema as an array
+const techSchema = new mongoose.Schema({
+  techEntries: [eachTechSchema], // Embed multiple tech entries
+});
 
-// Use a different model name, like "Tech"
 module.exports = mongoose.models.Tech || mongoose.model("Tech", techSchema);

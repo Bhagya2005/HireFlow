@@ -17,18 +17,7 @@ const userSchema = new mongoose.Schema({
     default: [],
   },
   allTechProblems: {
-    type: [
-      {
-        title: { type: String },
-        desc: { type: String },
-        testCases: [
-          {
-            input: { type: String },
-            output: { type: String },
-          },
-        ],
-      },
-    ],
+    type: Array,
     default: [],
   },
   aptitudePassingMarks: {
