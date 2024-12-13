@@ -29,7 +29,6 @@ router.post("/updateUser", async (req, res) => {
     passingMarksofTech,
     technicalScore,
   } = req.body;
-  console.log("Hiiii:", technicalScore);
 
   try {
     const user = await User.findById(userId);
@@ -65,14 +64,10 @@ router.post("/updateUser", async (req, res) => {
     // Check if tech passingMarks are set and if score meets/exceeds the passingMarks
     if (technicalScore >= user.technicalPassingMarks) {
       if (!user.techPassesCandidates.includes(userEmail)) {
-        console.log("passed");
-
         user.techPassesCandidates.push(userEmail); // Add email to passed candidates
       }
     } else {
       if (!user.techFailedCandidates.includes(userEmail)) {
-        console.log("failed");
-
         user.techFailedCandidates.push(userEmail); // Add email to failed candidates
       }
     }

@@ -66,6 +66,7 @@ const addTech = require("./routes/addTech");
 const getTech = require("./routes/getTech");
 const getUserInfo = require("./routes/getUserInfo");
 const checkTechSolution = require("./routes/checkTechSolution");
+const cheatingDetected = require("./routes/cheatingDetected");
 
 // Use routes
 app.use(signup);
@@ -79,6 +80,7 @@ app.use(addTech);
 app.use(getTech);
 app.use(getUserInfo);
 app.use(checkTechSolution);
+app.use(cheatingDetected);
 
 // Test route for users
 app.get("/", async (req, res) => {

@@ -1,37 +1,38 @@
 const express = require("express");
 const router = express.Router();
-const User = require("./path-to-your-model/userModel"); // Adjust the path to your user model
+const User = require("../models/userModel"); // Adjust the path to your user model
 
-// Route to handle cheating detection
 router.post("/cheatingDetected", async (req, res) => {
-  const { email, comment, cheatImage } = req.body;
+  const { userId, email, comment, cheatImage } = req.body;
 
-  console.log(req.body);
+  console.log("Request body:", req.body);
 
   if (!email || !comment) {
     return res.status(400).json({ message: "Email and comment are required." });
   }
 
   try {
-    // Find the user by email in candidateData
-    const user = await User.findOne({ "candidateData.email": email });
+    // Find the user by userId
+    const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: "Candidate not found." });
+      return res.status(404).json({ message: "User not found." });
     }
 
-    // Update the specific candidate's data in candidateData
+    // Find the candidate by email in candidateData
     const candidate = user.candidateData.find(
       (candidate) => candidate.email === email
     );
 
     if (candidate) {
+      // Update the candidate's cheating details
       candidate.cheatComment = comment;
-      candidate.cheatImage = cheatImage || candidate.cheatImage; // Update image if provided
+      candidate.cheatImage = cheatImage || candidate.cheatImage;
     } else {
       return res.status(404).json({ message: "Candidate data not found." });
     }
 
+    // Save the updated user document
     await user.save();
 
     return res

@@ -41,16 +41,22 @@ const QuizComponent = () => {
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [showCheatingModal, setShowCheatingModal] = useState(false);
 
-  const cheatingDetecedByUser = () => {
+  const cheatingDetecedByUser = async () => {
     try {
-      console.log(userid, cheatComment, "image");
-      const response = axios.post(`${BACKEND_URL}/cheatingDetected`, {
-        email: userid,
-        comment: cheatComment,
-        cheatImage: "image 1",
+      console.log("Cheating detected by user");
+      console.log("user: ", userid);
+      console.log("cheatComment: ", cheatComment);
+
+      const response = await axios.post(`${BACKEND_URL}/cheatingDetected`, {
+        userId: userid,
+        email: email,
+        comment: cheatComment || "No comment provided",
+        cheatImage: "image 1", // Replace with actual image data if available
       });
-      console.log("Cheating response: ", response);
-      window.location.reload(true);
+
+      console.log("Cheating response: ", response.data);
+      // Optional: Reload the page to reflect updates
+      // window.location.reload(true);
     } catch (error) {
       console.error("Error sending cheating email:", error);
     }
@@ -173,6 +179,7 @@ const QuizComponent = () => {
     console.log("Cheat Comment:", cheatComment);
     setCheatComment("");
     setIsModalOpen(false);
+    cheatingDetecedByUser();
   };
 
   // Start timer when quiz begins
@@ -289,6 +296,7 @@ const QuizComponent = () => {
   const handleQuizSubmit = async () => {
     const userId = userid;
     const userEmail = email;
+    setemail(email);
 
     if (!userEmail) {
       setError("Email is required to send the rejection email.");

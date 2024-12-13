@@ -14,11 +14,11 @@ const userSchema = new mongoose.Schema({
   hrTime: { type: String },
   allAptitudes: {
     type: Array,
-    default: [], // Array of tech problems directly
+    default: [],
   },
   allTechProblems: {
     type: Array,
-    default: [], // Array of tech problems directly
+    default: [],
   },
   aptitudePassingMarks: {
     type: Number,
@@ -29,19 +29,19 @@ const userSchema = new mongoose.Schema({
     default: 0,
   },
   aptitudePassesCandidates: {
-    type: [String], // Array of email strings of users who passed the aptitude test
+    type: [String],
     default: [],
   },
   aptitudeFailedCandidates: {
-    type: [String], // Array of email strings of users who passed the aptitude test
+    type: [String],
     default: [],
   },
   techPassesCandidates: {
-    type: [String], // Array of email strings of users who passed the aptitude test
+    type: [String],
     default: [],
   },
   techFailedCandidates: {
-    type: [String], // Array of email strings of users who passed the aptitude test
+    type: [String],
     default: [],
   },
   candidateData: {
@@ -49,13 +49,12 @@ const userSchema = new mongoose.Schema({
       {
         cheatImage: { type: String },
         cheatComment: { type: String },
-        name: { type: String, required: true }, // Candidate's name
-        email: { type: String, required: true }, // Candidate's email
+        name: { type: String, required: true },
+        email: { type: String, required: true },
       },
     ],
     default: [],
   },
 });
 
-// Use "User" as the model name
 module.exports = mongoose.models.User || mongoose.model("User", userSchema);

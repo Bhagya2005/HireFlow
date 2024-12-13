@@ -1,9 +1,92 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Mail, CheckCircle, XCircle } from "lucide-react";
+import { Mail, AlertTriangle, XCircle, Ban } from "lucide-react";
+
+// Candidate Rejection Modal
+const CandidateRejectionModal = ({ isOpen, onClose, candidate, onReject }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl shadow-2xl w-[700px] max-h-[90vh] overflow-y-auto">
+        <div className="bg-red-500 text-white p-6 rounded-t-2xl flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Candidate Cheating Evidence</h2>
+          <button
+            onClick={onClose}
+            className="hover:bg-red-600 p-2 rounded-full"
+          >
+            <XCircle size={28} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Candidate Info */}
+          <div className="bg-red-50 border-l-4 border-red-500 p-4">
+            <div className="flex items-center space-x-4">
+              <AlertTriangle className="text-red-600" size={40} />
+              <div>
+                <h3 className="text-xl font-semibold text-red-800">
+                  {candidate.name}
+                </h3>
+                <p className="text-red-700">{candidate.email}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Cheat Comment */}
+          {candidate.cheatComment && (
+            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+              <h4 className="text-lg font-semibold text-yellow-800 mb-2">
+                Cheating Comment
+              </h4>
+              <p className="text-yellow-900">{candidate.cheatComment}</p>
+            </div>
+          )}
+
+          {/* Cheat Image */}
+          {candidate.cheatImage && (
+            <div className="bg-gray-50 border-l-4 border-gray-500 p-4">
+              <h4 className="text-lg font-semibold text-gray-800 mb-4">
+                Cheating Evidence
+              </h4>
+              <img
+                src={candidate.cheatImage}
+                alt="Cheating Evidence"
+                className="w-full rounded-lg shadow-md max-h-[500px] object-contain"
+              />
+            </div>
+          )}
+
+          {/* Rejection Actions */}
+          <div className="flex justify-end space-x-4 mt-6">
+            <button
+              onClick={onClose}
+              className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => onReject(candidate)}
+              className="px-6 py-3 bg-red-600 text-white rounded-lg flex items-center space-x-2 hover:bg-red-700 transition"
+            >
+              <Ban size={20} />
+              <span>Reject Candidate</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Email Modal Component
-const EmailModal = ({ isOpen, onClose, candidateEmail }) => {
+const EmailModal = ({
+  isOpen,
+  onClose,
+  candidateEmail,
+  cheatImage,
+  cheatComment,
+}) => {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
 
@@ -15,7 +98,6 @@ const EmailModal = ({ isOpen, onClose, candidateEmail }) => {
 
     setIsSending(true);
     try {
-      // Implement email sending logic here
       await axios.post("/send-email", {
         to: candidateEmail,
         message,
@@ -34,7 +116,7 @@ const EmailModal = ({ isOpen, onClose, candidateEmail }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-96 p-6">
+      <div className="bg-white rounded-xl shadow-2xl w-[600px] p-6">
         <h2 className="text-xl font-bold mb-4">
           Send Email to {candidateEmail}
         </h2>
@@ -70,6 +152,7 @@ const RecruitmentDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -103,7 +186,8 @@ const RecruitmentDashboard = () => {
               : response.data.techFailedCandidates.includes(candidate.email)
               ? "Failed"
               : "Pending",
-            hrStatus: "Pending", // Assuming HR status is not yet implemented
+            hrStatus: "Pending",
+            isCheating: !!(candidate.cheatImage || candidate.cheatComment),
           })
         );
 
@@ -115,6 +199,28 @@ const RecruitmentDashboard = () => {
 
     fetchCandidates();
   }, []);
+
+  const handleRejectCandidate = async (candidate) => {
+    try {
+      // Send rejection email
+      await axios.post("/reject-candidate", {
+        email: candidate.email,
+        name: candidate.name,
+      });
+
+      // Update candidate status or remove from list
+      setCandidates(candidates.filter((c) => c.email !== candidate.email));
+
+      // Close modals
+      setRejectionModalOpen(false);
+
+      // Show success message
+      alert(`Candidate ${candidate.name} has been rejected`);
+    } catch (error) {
+      console.error("Error rejecting candidate:", error);
+      alert("Failed to reject candidate");
+    }
+  };
 
   const filteredCandidates = candidates.filter(
     (candidate) =>
@@ -136,6 +242,11 @@ const RecruitmentDashboard = () => {
   const openEmailModal = (candidate) => {
     setSelectedCandidate(candidate);
     setEmailModalOpen(true);
+  };
+
+  const openRejectionModal = (candidate) => {
+    setSelectedCandidate(candidate);
+    setRejectionModalOpen(true);
   };
 
   return (
@@ -173,9 +284,21 @@ const RecruitmentDashboard = () => {
                 {filteredCandidates.map((candidate) => (
                   <tr
                     key={candidate.email}
-                    className="border-b hover:bg-gray-50"
+                    className={`border-b hover:bg-gray-50 ${
+                      candidate.isCheating ? "bg-red-50 hover:bg-red-100" : ""
+                    }`}
                   >
-                    <td className="px-6 py-4 font-medium">{candidate.name}</td>
+                    <td className="px-6 py-4 font-medium flex items-center">
+                      {candidate.isCheating && (
+                        <button
+                          onClick={() => openRejectionModal(candidate)}
+                          className="mr-2 text-red-500 hover:text-red-700 transition"
+                        >
+                          <AlertTriangle size={20} />
+                        </button>
+                      )}
+                      {candidate.name}
+                    </td>
                     <td className="px-6 py-4">{candidate.email}</td>
                     <td
                       className={`px-6 py-4 ${getStatusColor(
@@ -199,12 +322,18 @@ const RecruitmentDashboard = () => {
                       {candidate.hrStatus}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => openEmailModal(candidate)}
-                        className="text-blue-500 hover:text-blue-700"
-                      >
-                        <Mail size={24} />
-                      </button>
+                      <div className="flex justify-center items-center space-x-2">
+                        <button
+                          onClick={() => openEmailModal(candidate)}
+                          className={`hover:text-blue-700 ${
+                            candidate.isCheating
+                              ? "text-red-500 hover:text-red-700"
+                              : "text-blue-500"
+                          }`}
+                        >
+                          <Mail size={24} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -219,6 +348,14 @@ const RecruitmentDashboard = () => {
         isOpen={emailModalOpen}
         onClose={() => setEmailModalOpen(false)}
         candidateEmail={selectedCandidate?.email || ""}
+      />
+
+      {/* Candidate Rejection Modal */}
+      <CandidateRejectionModal
+        isOpen={rejectionModalOpen}
+        onClose={() => setRejectionModalOpen(false)}
+        candidate={selectedCandidate || {}}
+        onReject={handleRejectCandidate}
       />
     </div>
   );
