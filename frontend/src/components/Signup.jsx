@@ -39,7 +39,7 @@ const Signup = () => {
       }
     } catch (error) {
       console.log("Signup failed", error);
-      alert("Error: Unable to sign up!");
+      alert("Error: Unable to sign up!", error);
     }
   };
 
