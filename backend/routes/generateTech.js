@@ -3,7 +3,7 @@ const router = express.Router();
 require("dotenv").config();
 
 const addOnPrompt = `
-Generate a set of 6 technical interview questions on {{techType}} DSA problems. Each problem should include:
+Generate a set of 4 technical interview questions on {{techType}} DSA problems. Each problem should include:
 - A unique ID for the problem (not serializable).
 - A title describing the problem.
 - A detailed description of the problem, including:
