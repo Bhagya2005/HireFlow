@@ -38,8 +38,8 @@ const MainPage = () => {
 
             {/* Subtitle */}
             <p className="max-w-2xl mx-auto text-xl text-gray-600">
-              Revolutionize your recruitment process with intelligent candidate
-              matching, automated screening, and data-driven hiring decisions.
+              Streamline your recruitment process with automated scheduling,
+              candidate management, and seamless hiring workflows.
             </p>
 
             {/* CTA button */}
@@ -56,12 +56,12 @@ const MainPage = () => {
             {/* Optional Stats or Social Proof */}
             <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-3 text-center">
               <div>
-                <div className="text-4xl font-bold text-blue-600">2000+</div>
-                <div className="text-gray-600 mt-1">Companies Trust Us</div>
+                <div className="text-4xl font-bold text-blue-600">100%</div>
+                <div className="text-gray-600 mt-1">Interview Validation</div>
               </div>
               <div>
-                <div className="text-4xl font-bold text-blue-600">98%</div>
-                <div className="text-gray-600 mt-1">Hiring Success Rate</div>
+                <div className="text-4xl font-bold text-blue-600">3</div>
+                <div className="text-gray-600 mt-1">interview Rounds</div>
               </div>
               <div>
                 <div className="text-4xl font-bold text-blue-600">24/7</div>
