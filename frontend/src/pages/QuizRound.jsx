@@ -36,7 +36,7 @@ const QuizComponent = () => {
   const [screenshot, setScreenshot] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cheatComment, setCheatComment] = useState("");
-  const [aptitudeTiming, setAptitudeTiming] = useState("");
+  const [aptitudeTiming, setAptitudeTiming] = useState(30);
 
   // New state for timer
   const [timeRemaining, setTimeRemaining] = useState(0);
@@ -617,12 +617,12 @@ const QuizComponent = () => {
         </div>
 
         {/* Manual Trigger Button */}
-        <button
+        {/* <button
           onClick={handleManualTrigger}
           className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
         >
           Trigger Cheat Detection
-        </button>
+        </button> */}
       </div>
 
       {/* Main Content Container */}
@@ -632,7 +632,7 @@ const QuizComponent = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[1000]">
             <div className="bg-white p-8 rounded-lg w-96 max-w-md relative">
               {/* Close button positioned outside and to the top-right */}
-              <button
+              {/* <button
                 onClick={() => setIsModalOpen(false)}
                 className="absolute -top-3 -right-3 bg-white rounded-full shadow-lg p-2 hover:bg-gray-100 transition"
               >
@@ -651,7 +651,7 @@ const QuizComponent = () => {
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-              </button>
+              </button> */}
 
               <h2 className="text-xl font-bold mb-4 text-center">
                 Potential Cheating Detected

@@ -30,6 +30,7 @@ router.post("/updateUser", async (req, res) => {
     technicalScore,
   } = req.body;
 
+  let techPass = false;
   try {
     const user = await User.findById(userId);
     if (!user) {
@@ -68,6 +69,7 @@ router.post("/updateUser", async (req, res) => {
       if (technicalScore >= user.technicalPassingMarks) {
         if (!user.techPassesCandidates.includes(userEmail)) {
           user.techPassesCandidates.push(userEmail); // Add email to passed candidates
+          techPass = true;
           break;
         }
       } else {
@@ -91,7 +93,7 @@ router.post("/updateUser", async (req, res) => {
     // Save the updated user
     await user.save();
 
-    res.status(200).send("User updated successfully");
+    res.status(200).send({ message: "User updated successfully", techPass });
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal server error");
