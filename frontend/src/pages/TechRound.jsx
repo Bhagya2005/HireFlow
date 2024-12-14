@@ -345,7 +345,11 @@ const TechRound = () => {
           console.error("Failed to send email:", emailError);
         }
       }
-      // window.location.reload(true);
+
+      alert(
+        "You have successfully completed the Technical round, we will update you to through the email soon."
+      );
+      window.location.reload(true);
     } catch (error) {
       console.error("Error updating user:", error);
       alert("Failed to update user. Please try again.");

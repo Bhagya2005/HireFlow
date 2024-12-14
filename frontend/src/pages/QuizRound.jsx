@@ -361,6 +361,9 @@ const QuizComponent = () => {
       }
 
       console.log(`Quiz completed! Your score: ${score}`);
+      alert(
+        "You have successfully completed the Aptitude round, we will update you to through the email soon."
+      );
       setSubmitted(false);
     } catch (error) {
       console.error("Error submitting quiz:", error);
