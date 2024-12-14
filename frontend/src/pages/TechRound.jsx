@@ -453,23 +453,23 @@ const TechRound = () => {
   };
 
   // Real-time code syncing using SSE
-  useEffect(() => {
-    const eventSource = new EventSource(`${BACKEND_URL}/api/events`);
-    eventSource.onmessage = (event) => {
-      const { text: newCode } = JSON.parse(event.data);
-      setCode(newCode);
-    };
+  // useEffect(() => {
+  //   const eventSource = new EventSource(`${BACKEND_URL}/api/events`);
+  //   eventSource.onmessage = (event) => {
+  //     const { text: newCode } = JSON.parse(event.data);
+  //     setCode(newCode);
+  //   };
 
-    return () => {
-      eventSource.close();
-    };
-  }, []);
+  //   return () => {
+  //     eventSource.close();
+  //   };
+  // }, []);
 
   // Update code in backend on change
-  const handleCodeChange = async (newCode) => {
-    setCode(newCode);
-    await axios.post(`${BACKEND_URL}/api/update`, { text: newCode });
-  };
+  // const handleCodeChange = async (newCode) => {
+  //   setCode(newCode);
+  //   await axios.post(`${BACKEND_URL}/api/update`, { text: newCode });
+  // };
 
   useEffect(() => {
     const fetchProblems = async () => {
