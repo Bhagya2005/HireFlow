@@ -270,40 +270,40 @@ const TechRound = () => {
 
   const [showCheatingModal, setShowCheatingModal] = useState(false);
 
-  // useEffect(() => {
-  //   const handlePaste = (e) => {
-  //     if (!isPasteAllowed) {
-  //       e.preventDefault();
-  //       alert("Pasting is disabled during the technical round.");
-  //     }
-  //   };
+  useEffect(() => {
+    const handlePaste = (e) => {
+      if (!isPasteAllowed) {
+        e.preventDefault();
+        alert("Pasting is disabled during the technical round.");
+      }
+    };
 
-  //   // Add paste event listener to the document
-  //   document.addEventListener("paste", handlePaste);
+    // Add paste event listener to the document
+    document.addEventListener("paste", handlePaste);
 
-  //   // Cleanup event listener on component unmount
-  //   return () => {
-  //     document.removeEventListener("paste", handlePaste);
-  //   };
-  // }, []);
-  // useEffect(() => {
-  //   const handleVisibilityChange = () => {
-  //     if (document.hidden && !isPasteAllowed) {
-  //       console.log(
-  //         "User has switched to another tab or minimized the browser."
-  //       );
-  //       setShowCheatingModal(true);
-  //     }
-  //   };
+    // Cleanup event listener on component unmount
+    return () => {
+      document.removeEventListener("paste", handlePaste);
+    };
+  }, []);
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && !isPasteAllowed) {
+        console.log(
+          "User has switched to another tab or minimized the browser."
+        );
+        setShowCheatingModal(true);
+      }
+    };
 
-  //   // Add the event listener
-  //   document.addEventListener("visibilitychange", handleVisibilityChange);
+    // Add the event listener
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
-  //   // Clean up the event listener on component unmount
-  //   return () => {
-  //     document.removeEventListener("visibilitychange", handleVisibilityChange);
-  //   };
-  // }, []);
+    // Clean up the event listener on component unmount
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   const handleEndSession = async () => {
     alert(
