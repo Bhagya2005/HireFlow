@@ -51,25 +51,32 @@ router.post("/updateUser", async (req, res) => {
     if (hrTime) user.hrTime = hrTime;
 
     // Check if aptitude passingMarks are set and if score meets/exceeds the passingMarks
-    if (score >= user.aptitudePassingMarks) {
-      if (!user.aptitudePassesCandidates.includes(userEmail)) {
-        user.aptitudePassesCandidates.push(userEmail); // Add email to passed candidates
+    while (true) {
+      if (score >= user.aptitudePassingMarks) {
+        if (!user.aptitudePassesCandidates.includes(userEmail)) {
+          user.aptitudePassesCandidates.push(userEmail); // Add email to passed candidates
+          break;
+        }
+      } else {
+        if (!user.aptitudeFailedCandidates.includes(userEmail)) {
+          user.aptitudeFailedCandidates.push(userEmail); // Add email to failed candidates
+          break;
+        }
       }
-    } else {
-      if (!user.aptitudeFailedCandidates.includes(userEmail)) {
-        user.aptitudeFailedCandidates.push(userEmail); // Add email to failed candidates
-      }
-    }
 
-    // Check if tech passingMarks are set and if score meets/exceeds the passingMarks
-    if (technicalScore >= user.technicalPassingMarks) {
-      if (!user.techPassesCandidates.includes(userEmail)) {
-        user.techPassesCandidates.push(userEmail); // Add email to passed candidates
+      // Check if tech passingMarks are set and if score meets/exceeds the passingMarks
+      if (technicalScore >= user.technicalPassingMarks) {
+        if (!user.techPassesCandidates.includes(userEmail)) {
+          user.techPassesCandidates.push(userEmail); // Add email to passed candidates
+          break;
+        }
+      } else {
+        if (!user.techFailedCandidates.includes(userEmail)) {
+          user.techFailedCandidates.push(userEmail); // Add email to failed candidates
+          break;
+        }
       }
-    } else {
-      if (!user.techFailedCandidates.includes(userEmail)) {
-        user.techFailedCandidates.push(userEmail); // Add email to failed candidates
-      }
+      break;
     }
 
     // Update email and check if it already exists

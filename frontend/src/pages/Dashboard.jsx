@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Mail, AlertTriangle, XCircle, Ban } from "lucide-react";
+import cheateEmail from "../components/CheatingEmail";
 
 // Candidate Rejection Modal
 const CandidateRejectionModal = ({ isOpen, onClose, candidate, onReject }) => {
@@ -44,7 +45,7 @@ const CandidateRejectionModal = ({ isOpen, onClose, candidate, onReject }) => {
           )}
 
           {/* Cheat Image */}
-          {candidate.cheatImage && (
+          {/* {candidate.cheatImage && (
             <div className="bg-gray-50 border-l-4 border-gray-500 p-4">
               <h4 className="text-lg font-semibold text-gray-800 mb-4">
                 Cheating Evidence
@@ -55,7 +56,7 @@ const CandidateRejectionModal = ({ isOpen, onClose, candidate, onReject }) => {
                 className="w-full rounded-lg shadow-md max-h-[500px] object-contain"
               />
             </div>
-          )}
+          )} */}
 
           {/* Rejection Actions */}
           <div className="flex justify-end space-x-4 mt-6">
@@ -202,11 +203,18 @@ const RecruitmentDashboard = () => {
 
   const handleRejectCandidate = async (candidate) => {
     try {
-      // Send rejection email
-      await axios.post("/reject-candidate", {
-        email: candidate.email,
-        name: candidate.name,
-      });
+      console.log(candidate.email);
+
+      const templateParams = {
+        to_email: candidate.email,
+      };
+
+      try {
+        await cheateEmail(templateParams);
+        console.log("Email sent successfully!");
+      } catch (emailError) {
+        console.error("Failed to send email:", emailError);
+      }
 
       // Update candidate status or remove from list
       setCandidates(candidates.filter((c) => c.email !== candidate.email));

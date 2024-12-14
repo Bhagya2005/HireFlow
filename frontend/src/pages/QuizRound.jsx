@@ -104,7 +104,7 @@ const QuizComponent = () => {
   const loadModels = () => {
     Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri("/models")]).then(
       () => {
-        detectFaces();
+        detectFullBody();
       }
     );
   };
@@ -119,7 +119,7 @@ const QuizComponent = () => {
     return canvas.toDataURL("image/png");
   };
 
-  const detectFaces = () => {
+  const detectFullBody = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
@@ -148,6 +148,14 @@ const QuizComponent = () => {
 
       resizedDetections.forEach((detection) => {
         const { x, y, width, height } = detection.box;
+
+        // Calculate body shape dimensions
+        const bodyWidth = width * 1.5; // Make the body wider than the face
+        const bodyHeight = height * 2.5; // Extend downward to simulate body
+        const bodyX = x - (bodyWidth - width) / 2; // Center the body horizontally
+        const bodyY = y + height; // Position the body below the face
+
+        // Draw face circle
         const centerX = x + width / 2;
         const centerY = y + height / 2;
         const radius = Math.max(width, height) / 2;
@@ -156,6 +164,13 @@ const QuizComponent = () => {
         ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
         ctx.strokeStyle = "red";
         ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Draw body rectangle
+        ctx.beginPath();
+        ctx.rect(bodyX, bodyY, bodyWidth, bodyHeight);
+        ctx.strokeStyle = "blue"; // Different color for body shape
+        ctx.lineWidth = 2;
         ctx.stroke();
       });
 

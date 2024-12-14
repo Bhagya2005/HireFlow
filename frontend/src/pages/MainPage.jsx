@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 // import { ArrowRight } from "lucide-react";
 
 const MainPage = () => {
-  const [isEmail, setisEmail] = useState("")
+  const [isEmail, setisEmail] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -12,15 +12,15 @@ const MainPage = () => {
     if (email) {
       setisEmail(email);
     }
-  }, [isEmail])
+  }, [isEmail]);
 
   const handleButtonClick = () => {
-    if(isEmail) {
+    if (isEmail) {
       navigate("/recruiter");
     } else {
       navigate("/signup");
     }
-  }
+  };
 
   return (
     <>
@@ -44,10 +44,13 @@ const MainPage = () => {
 
             {/* CTA button */}
             <div className="mt-10">
-                <button onClick={handleButtonClick} className="group bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded-full transition-all duration-200 transform hover:scale-105">
-                  Create a Smart Recruit
-                  {/* <ArrowRight className="ml-2 h-5 w-5 inline-block group-hover:translate-x-1 transition-transform" /> */}
-                </button>
+              <button
+                onClick={handleButtonClick}
+                className="group bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded-full transition-all duration-200 transform hover:scale-105"
+              >
+                Create a Smart Recruit
+                {/* <ArrowRight className="ml-2 h-5 w-5 inline-block group-hover:translate-x-1 transition-transform" /> */}
+              </button>
             </div>
 
             {/* Optional Stats or Social Proof */}
