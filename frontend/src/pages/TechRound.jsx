@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import sendHREmail from "../components/HRemail";
+
+// Keep existing global variables
 let current = "entrance";
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 const LANGUAGE_VERSIONS = {
@@ -27,11 +29,14 @@ const LANGUAGE_VERSIONS = {
 };
 
 let currentlyScored = 0;
+let isPasteAllowed = true;
 
+// Keep existing API setup
 const API = axios.create({
   baseURL: "https://emkc.org/api/v2/piston",
 });
 
+// Keep existing executeCode function
 const executeCode = async (language, sourceCode) => {
   const response = await API.post("/execute", {
     language: language,
@@ -41,18 +46,42 @@ const executeCode = async (language, sourceCode) => {
   return response.data;
 };
 
-let isPasteAllowed = true;
-
-const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
+const TechRound = () => {
+  const [codeStore, setCodeStore] = useState({});
+  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
+  const [code, setCode] = useState("");
+  // Combined state variables from both components
   const [name, setName] = useState("");
   const [userId, setUserId] = useState("");
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
+  const [loginError, setLoginError] = useState("");
   const [candidateEmails, setCandidatesEmails] = useState([]);
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-  const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL;
+  const [showLoginForm, setShowLoginForm] = useState(true);
 
-  const handleSubmit = async (e) => {
+  // Original TechRound states
+  const [problems, setProblems] = useState([]);
+  const [selectedLanguage, setSelectedLanguage] = useState("python");
+  const [output, setOutput] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+  const [isSubmitRunning, setSubmitIsRunning] = useState(false);
+  const [error, setError] = useState(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [techSolvedArr, setTechSolvedArr] = useState([]);
+  const [jobRole, setjobRole] = useState("");
+  const [companyName, setcompanyName] = useState("");
+  const [techTiming, setTechTiming] = useState(
+    localStorage.getItem("techTime") || 0
+  );
+  const [remainingTime, setRemainingTime] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [currentPage, setCurrentPage] = useState("entrance");
+  const [passingMarks, setpassingMarks] = useState("");
+  const [testCaseResults, setTestCaseResults] = useState([]);
+  const [showCheatingModal, setShowCheatingModal] = useState(false);
+
+  // Login form handler (Previously in UserInfoDialog)
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
 
     try {
@@ -62,15 +91,11 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
         return;
       }
 
-      // Fetch user info from the backend
       const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
-
-      // Extract emails from the response
       const emails =
         response.data.candidateData?.map((candidate) => candidate.email) || [];
       setCandidatesEmails(emails);
 
-      // Check if the entered email exists
       const emailExists = emails.some(
         (candidateEmail) => candidateEmail === email
       );
@@ -86,190 +111,35 @@ const UserInfoDialog = ({ onSubmit, isDarkMode }) => {
     }
 
     if (!name.trim()) {
-      setError("Name is required");
+      setLoginError("Name is required");
       return;
     }
 
     if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
-      setError("Please enter a valid email");
+      setLoginError("Please enter a valid email");
       return;
     }
 
-    // Store user info in localStorage
     localStorage.setItem("userName", name);
     localStorage.setItem("technicalUserId", userId);
     localStorage.setItem("technicalUserEmail", email);
 
-    // Disable paste when technical round starts
     isPasteAllowed = false;
 
     try {
-      const userId = localStorage.getItem("technicalUserId");
-      if (!userId) {
-        console.error("No userId found in localStorage.");
-        return;
-      }
-
       const response = await axios.get(`${BACKEND_URL}/getUserInfo/${userId}`);
-
       const techTime = response.data.techTime || 0;
       localStorage.setItem("techTime", techTime);
     } catch (error) {
       console.error("Error fetching user info:", error);
     }
 
-    onSubmit();
+    setShowLoginForm(false);
+    setLoading(false);
   };
 
-  return (
-    <div
-      className={`min-h-screen flex items-center justify-center ${
-        isDarkMode
-          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white"
-          : "bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 text-gray-800"
-      }`}
-    >
-      <div
-        className={`w-full max-w-md p-8 rounded-xl shadow-lg ${
-          isDarkMode
-            ? "bg-gray-800 border border-gray-700"
-            : "bg-white border border-gray-200"
-        }`}
-      >
-        <h2
-          className={`text-3xl font-bold mb-6 text-center ${
-            isDarkMode
-              ? "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400"
-              : "text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
-          }`}
-        >
-          Technical Round
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label
-              htmlFor="name"
-              className={`block mb-2 ${
-                isDarkMode ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              Full Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your full name"
-              className={`w-full p-3 rounded-lg ${
-                isDarkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-gray-100 border-gray-300 text-gray-800"
-              }`}
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="userId"
-              className={`block mb-2 ${
-                isDarkMode ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              User ID
-            </label>
-            <input
-              type="text"
-              id="userId"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              placeholder="Enter your user ID"
-              className={`w-full p-3 rounded-lg ${
-                isDarkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-gray-100 border-gray-300 text-gray-800"
-              }`}
-            />
-          </div>
-          <div className="mb-6">
-            <label
-              htmlFor="email"
-              className={`block mb-2 ${
-                isDarkMode ? "text-gray-300" : "text-gray-700"
-              }`}
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className={`w-full p-3 rounded-lg ${
-                isDarkMode
-                  ? "bg-gray-700 border-gray-600 text-white"
-                  : "bg-gray-100 border-gray-300 text-gray-800"
-              }`}
-            />
-          </div>
-          {error && (
-            <div
-              className={`mb-4 p-3 rounded-lg text-center ${
-                isDarkMode
-                  ? "bg-red-900/50 text-red-300"
-                  : "bg-red-100 text-red-600"
-              }`}
-            >
-              {error}
-            </div>
-          )}
-          <button
-            // type="submit"
-            // onClick={startTechRound}
-            className={`w-full p-3 rounded-lg transition-colors ${
-              isDarkMode
-                ? "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
-                : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-            }`}
-          >
-            Start Technical Round
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-const TechRound = () => {
-  const [problems, setProblems] = useState([]);
-  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-  const [selectedLanguage, setSelectedLanguage] = useState("python");
-  const [code, setCode] = useState("");
-  const [output, setOutput] = useState("");
-  const [isRunning, setIsRunning] = useState(false);
-  const [isSubmitRunning, setSubmitIsRunning] = useState(false);
-  const [error, setError] = useState(null);
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [techSolvedArr, setTechSolvedArr] = useState([]);
-  const [codeStore, setCodeStore] = useState({});
-  const [jobRole, setjobRole] = useState("");
-  const [companyName, setcompanyName] = useState("");
-  const [showUserInfoDialog, setShowUserInfoDialog] = useState(true);
-
-  const [techTiming, setTechTiming] = useState(
-    localStorage.getItem("techTime") || 0
-  );
-  const [remainingTime, setRemainingTime] = useState(0);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [allowPaste, setAllowPaste] = useState(true);
-  const [currentPage, setCurrentPage] = useState("entrance");
-  const [passingMarks, setpassingMarks] = useState("");
-
-  const [testCaseResults, setTestCaseResults] = useState([]);
-
-  const [showCheatingModal, setShowCheatingModal] = useState(false);
-
+  // Keep all existing useEffect hooks from TechRound component
+  // Paste event listener
   useEffect(() => {
     const handlePaste = (e) => {
       if (!isPasteAllowed) {
@@ -277,32 +147,72 @@ const TechRound = () => {
         alert("Pasting is disabled during the technical round.");
       }
     };
-
-    // Add paste event listener to the document
     document.addEventListener("paste", handlePaste);
-
-    // Cleanup event listener on component unmount
-    return () => {
-      document.removeEventListener("paste", handlePaste);
-    };
+    return () => document.removeEventListener("paste", handlePaste);
   }, []);
+
+  // Visibility change detection
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && !isPasteAllowed) {
-        console.log(
-          "User has switched to another tab or minimized the browser."
-        );
         setShowCheatingModal(true);
       }
     };
-
-    // Add the event listener
     document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    // Clean up the event listener on component unmount
-    return () => {
+    return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, []);
+
+  // Timer effect
+  useEffect(() => {
+    let interval;
+    if (isTimerRunning && remainingTime > 0) {
+      interval = setInterval(() => {
+        setRemainingTime((prevTime) => {
+          if (prevTime <= 1) {
+            clearInterval(interval);
+            setIsTimerRunning(false);
+            handleTimeExpired();
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, remainingTime]);
+
+  // Dark mode effect
+  useEffect(() => {
+    document.body.classList.toggle("dark", isDarkMode);
+    document.body.classList.toggle("light", !isDarkMode);
+  }, [isDarkMode]);
+
+  // Fetch problems effect
+  useEffect(() => {
+    const fetchProblems = async () => {
+      try {
+        const response = await axios.get(`${BACKEND_URL}/getTech`, {
+          params: { userId: localStorage.getItem("technicalUserId") },
+          headers: { "Content-Type": "application/json" },
+        });
+        const validProblems = response.data.techEntries.filter(
+          (problem) => problem && typeof problem === "object" && problem.title
+        );
+        setProblems(validProblems);
+        const initialCodeStore = {};
+        validProblems.forEach((_, index) => {
+          initialCodeStore[index] = "";
+        });
+        setCodeStore(initialCodeStore);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching tech:", error);
+        setLoading(false);
+      }
     };
+
+    fetchProblems();
   }, []);
 
   const handleEndSession = async () => {
@@ -407,20 +317,26 @@ const TechRound = () => {
   }, [isTimerRunning, remainingTime]);
 
   const handleTestCases = (currentProblem, output) => {
-    if (!currentProblem.testCases || currentProblem.testCases.length === 0) {
+    if (
+      !currentProblem?.testCases ||
+      !Array.isArray(currentProblem.testCases) ||
+      currentProblem.testCases.length === 0
+    ) {
       return [];
     }
 
     return currentProblem.testCases.map((testCase) => {
-      const isCorrect = compareTestCaseOutputs(
-        testCase.expectedOutput.toString(),
-        output.toString()
-      );
+      // Ensure testCase and its properties exist and convert to strings
+      const expectedOutput = String(testCase?.expectedOutput || "");
+      const actualOutput = String(output || "");
+      const input = String(testCase?.input || "");
+
+      const isCorrect = compareTestCaseOutputs(expectedOutput, actualOutput);
 
       return {
-        input: testCase.input,
-        expectedOutput: testCase.expectedOutput,
-        actualOutput: output,
+        input,
+        expectedOutput,
+        actualOutput,
         isCorrect,
       };
     });
@@ -451,25 +367,6 @@ const TechRound = () => {
     alert("Technical round time has expired!");
     handleEndSession();
   };
-
-  // Real-time code syncing using SSE
-  // useEffect(() => {
-  //   const eventSource = new EventSource(`${BACKEND_URL}/api/events`);
-  //   eventSource.onmessage = (event) => {
-  //     const { text: newCode } = JSON.parse(event.data);
-  //     setCode(newCode);
-  //   };
-
-  //   return () => {
-  //     eventSource.close();
-  //   };
-  // }, []);
-
-  // Update code in backend on change
-  // const handleCodeChange = async (newCode) => {
-  //   setCode(newCode);
-  //   await axios.post(`${BACKEND_URL}/api/update`, { text: newCode });
-  // };
 
   useEffect(() => {
     const fetchProblems = async () => {
@@ -503,6 +400,7 @@ const TechRound = () => {
     fetchProblems();
   }, []);
 
+  // Update the handleRunCode function
   const handleRunCode = async () => {
     setIsRunning(true);
     setError(null);
@@ -514,14 +412,12 @@ const TechRound = () => {
       const output = result.run.output || "No output";
       setOutput(output);
 
-      // Use the new test case handling logic
-      const results = handleTestCases(currentProblem, output);
-      setTestCaseResults(results);
-
-      // Check if all test cases pass
-      const allTestCasesPassed = results.every((result) => result.isCorrect);
-
-      // Optionally, you can add additional logic here for handling all test cases passing
+      // Safely get the current problem
+      const currentProblem = problems[currentProblemIndex];
+      if (currentProblem) {
+        const results = handleTestCases(currentProblem, output);
+        setTestCaseResults(results);
+      }
     } catch (err) {
       setError(err.message || "An error occurred while executing the code");
     } finally {
@@ -530,40 +426,44 @@ const TechRound = () => {
   };
 
   const compareTestCaseOutputs = (expectedOutput, actualOutput) => {
-    // Trim both outputs
-    const trimmedExpected = expectedOutput.trim();
-    const trimmedActual = actualOutput.trim();
+    // Ensure inputs are strings
+    const trimmedExpected = String(expectedOutput).trim();
+    const trimmedActual = String(actualOutput).trim();
 
-    // Check if the outputs are equal after trimming
+    // Direct string comparison
     if (trimmedExpected === trimmedActual) {
       return true;
     }
 
-    // Try parsing as numbers
+    // Number comparison
     const numExpected = Number(trimmedExpected);
     const numActual = Number(trimmedActual);
     if (!isNaN(numExpected) && !isNaN(numActual) && numExpected === numActual) {
       return true;
     }
 
-    // Try parsing as floats with precision check
+    // Float comparison with precision
     const floatExpected = parseFloat(trimmedExpected);
     const floatActual = parseFloat(trimmedActual);
     if (!isNaN(floatExpected) && !isNaN(floatActual)) {
-      // Check if the difference is very small (accounting for floating-point precision)
       return Math.abs(floatExpected - floatActual) < 1e-9;
     }
 
-    // Optional: Handle array-like outputs
+    // Array-like comparison
     const normalizeArrayOutput = (output) => {
-      return output
-        .replace(/[\[\]]/g, "") // Remove square brackets
-        .replace(/\s+/g, " ") // Normalize whitespace
-        .trim()
-        .split(" ")
-        .map((item) => item.trim())
-        .filter((item) => item !== "")
-        .join(" ");
+      try {
+        return String(output)
+          .replace(/[\[\]]/g, "")
+          .replace(/\s+/g, " ")
+          .trim()
+          .split(" ")
+          .map((item) => item.trim())
+          .filter((item) => item !== "")
+          .join(" ");
+      } catch (error) {
+        console.error("Error normalizing array output:", error);
+        return String(output);
+      }
     };
 
     const normalizedExpected = normalizeArrayOutput(trimmedExpected);
@@ -631,38 +531,117 @@ const TechRound = () => {
     });
   };
 
+  useEffect(() => {
+    console.log("State Update:", {
+      currentProblemIndex,
+      code,
+      codeStore,
+    });
+  }, [currentProblemIndex, code, codeStore]);
+
   const handleProblemChange = (newIndex) => {
-    // Ensure newIndex is within valid range
+    console.log("Handle problem change");
+    console.log("newIndex:", newIndex);
+
     if (newIndex < 0 || newIndex >= problems.length) return;
 
-    // Save current code to store
-    setCodeStore((prev) => ({
-      ...prev,
-      [currentProblemIndex]: code,
-    }));
+    // First save the current code
+    setCodeStore((prev) => {
+      const updatedStore = {
+        ...prev,
+        [currentProblemIndex]: code || "",
+      };
+      console.log("Updated codeStore:", updatedStore);
+      return updatedStore;
+    });
 
-    // Set new problem index
-    setCurrentProblemIndex(newIndex);
-
-    // Load code for new problem, defaulting to empty string if undefined
-    setCode(codeStore[newIndex] || "");
-
-    // Reset output and error
+    // Reset states before changing problem
     setOutput("");
     setError(null);
+    setTestCaseResults([]); // Reset test case results
+
+    // Update the current problem index
+    setCurrentProblemIndex(newIndex);
+
+    // Load the code for the new problem
+    setCode((prev) => {
+      const storedCode = codeStore[newIndex];
+      console.log(`Loading code for problem ${newIndex}:`, storedCode);
+      return storedCode || "";
+    });
   };
+
+  useEffect(() => {
+    console.log("Problems array:", problems);
+    if (!Array.isArray(problems)) {
+      console.error("Problems is not an array:", problems);
+    }
+  }, [problems]);
 
   useEffect(() => {
     document.body.classList.toggle("dark", isDarkMode);
     document.body.classList.toggle("light", !isDarkMode);
   }, [isDarkMode]);
 
-  if (showUserInfoDialog) {
+  if (showLoginForm) {
     return (
-      <UserInfoDialog
-        onSubmit={() => setShowUserInfoDialog(false)}
-        isDarkMode={isDarkMode}
-      />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200">
+        <div className="w-full max-w-md p-8 rounded-xl shadow-lg bg-white border border-gray-200">
+          <h2 className="text-3xl font-bold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+            Technical Round
+          </h2>
+          <form onSubmit={handleLoginSubmit}>
+            {/* Login form fields */}
+            <div className="mb-4">
+              <label htmlFor="name" className="block mb-2 text-gray-700">
+                Full Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your full name"
+                className="w-full p-3 rounded-lg bg-gray-100 border-gray-300 text-gray-800"
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="userId" className="block mb-2 text-gray-700">
+                User ID
+              </label>
+              <input
+                type="text"
+                id="userId"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                placeholder="Enter your user ID"
+                className="w-full p-3 rounded-lg bg-gray-100 border-gray-300 text-gray-800"
+              />
+            </div>
+            <div className="mb-6">
+              <label htmlFor="email" className="block mb-2 text-gray-700">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full p-3 rounded-lg bg-gray-100 border-gray-300 text-gray-800"
+              />
+            </div>
+            {loginError && (
+              <div className="mb-4 p-3 rounded-lg text-center bg-red-100 text-red-600">
+                {loginError}
+              </div>
+            )}
+            <button className="w-full p-3 rounded-lg transition-colors bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+              Start Technical Round
+            </button>
+          </form>
+        </div>
+      </div>
     );
   }
 
@@ -678,7 +657,7 @@ const TechRound = () => {
     );
   }
 
-  if (!problems || problems.length === 0) {
+  if (!problems || !Array.isArray(problems) || problems.length === 0) {
     return (
       <div
         className={`min-h-screen flex items-center justify-center ${
@@ -702,8 +681,10 @@ const TechRound = () => {
     );
   }
 
-  const currentProblem = problems[currentProblemIndex];
-
+  const currentProblem = problems[currentProblemIndex] || {};
+  if (!currentProblem) {
+    return null;
+  }
   const handleSubmit = async () => {
     setSubmitIsRunning(true);
     try {
@@ -737,6 +718,85 @@ const TechRound = () => {
     } finally {
       setSubmitIsRunning(false);
     }
+  };
+
+  const renderTestCases = () => {
+    const currentProblem = problems[currentProblemIndex];
+
+    if (
+      !currentProblem?.testCases ||
+      !Array.isArray(currentProblem.testCases) ||
+      currentProblem.testCases.length === 0
+    ) {
+      return (
+        <div
+          className={`text-center py-8 ${
+            isDarkMode ? "text-gray-500" : "text-gray-400"
+          }`}
+        >
+          No test cases available for this problem
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-2 gap-4">
+        {currentProblem.testCases.map((testCase, index) => (
+          <div
+            key={index}
+            className={`p-3 rounded-lg border ${
+              isDarkMode
+                ? "bg-gray-900/50 border-gray-700"
+                : "bg-gray-50 border-gray-300"
+            }`}
+          >
+            <div className="flex justify-between items-center mb-2">
+              <span
+                className={`font-semibold ${
+                  isDarkMode ? "text-gray-300" : "text-gray-700"
+                }`}
+              >
+                Test Case {index + 1}
+              </span>
+              {testCaseResults[index] &&
+                (testCaseResults[index].isCorrect ? (
+                  <CheckCircle2 className="text-green-500 h-5 w-5" />
+                ) : (
+                  <XCircle className="text-red-500 h-5 w-5" />
+                ))}
+            </div>
+            <div
+              className={`mb-2 ${
+                isDarkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              <span className="font-medium">Input:</span>{" "}
+              {String(testCase?.input || "")}
+            </div>
+            <div
+              className={`mb-2 ${
+                isDarkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              <span className="font-medium">Expected:</span>{" "}
+              {String(testCase?.expectedOutput || "")}
+            </div>
+            {testCaseResults[index] && (
+              <div
+                className={
+                  testCaseResults[index].isCorrect
+                    ? "text-green-500"
+                    : "text-red-500"
+                }
+              >
+                <span className="font-medium">Actual:</span>{" "}
+                {String(testCaseResults[index].actualOutput || "")}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -921,7 +981,7 @@ const TechRound = () => {
                 value={code}
                 onChange={(e) => {
                   setCode(e.target.value);
-                  handleCodeChange(e.target.value);
+                  // handleCodeChange(e.target.value);
                 }}
                 className={`w-full h-full p-4 font-mono text-sm resize-none focus:outline-none bg-transparent ${
                   isDarkMode ? "text-gray-200" : "text-gray-800"
@@ -1014,76 +1074,10 @@ const TechRound = () => {
                     : "text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"
                 }`}
               >
-                Test Cases
+                Manual Test Cases
               </h2>
 
-              {currentProblem.testCases &&
-              currentProblem.testCases.length > 0 ? (
-                <div className="grid grid-cols-2 gap-4">
-                  {currentProblem.testCases.map((testCase, index) => (
-                    <div
-                      key={index}
-                      className={`p-3 rounded-lg border ${
-                        isDarkMode
-                          ? "bg-gray-900/50 border-gray-700"
-                          : "bg-gray-50 border-gray-300"
-                      }`}
-                    >
-                      <div className="flex justify-between items-center mb-2">
-                        <span
-                          className={`font-semibold ${
-                            isDarkMode ? "text-gray-300" : "text-gray-700"
-                          }`}
-                        >
-                          Test Case {index + 1}
-                        </span>
-                        {testCaseResults[index] &&
-                          (testCaseResults[index].isCorrect ? (
-                            <CheckCircle2 className="text-green-500 h-5 w-5" />
-                          ) : (
-                            <XCircle className="text-red-500 h-5 w-5" />
-                          ))}
-                      </div>
-                      <div
-                        className={`mb-2 ${
-                          isDarkMode ? "text-gray-400" : "text-gray-600"
-                        }`}
-                      >
-                        <span className="font-medium">Input:</span>{" "}
-                        {testCase.input}
-                      </div>
-                      <div
-                        className={`mb-2 ${
-                          isDarkMode ? "text-gray-400" : "text-gray-600"
-                        }`}
-                      >
-                        <span className="font-medium">Expected:</span>{" "}
-                        {testCase.expectedOutput}
-                      </div>
-                      {testCaseResults[index] && (
-                        <div
-                          className={`${
-                            testCaseResults[index].isCorrect
-                              ? "text-green-500"
-                              : "text-red-500"
-                          }`}
-                        >
-                          <span className="font-medium">Actual:</span>{" "}
-                          {testCaseResults[index].actualOutput}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div
-                  className={`text-center py-8 ${
-                    isDarkMode ? "text-gray-500" : "text-gray-400"
-                  }`}
-                >
-                  No test cases available for this problem
-                </div>
-              )}
+              {renderTestCases()}
             </div>
           </div>
         </div>

@@ -25,7 +25,7 @@ const MainPage = () => {
   return (
     <>
       <Navbar />
-      <div className="bg-gradient-to-b from-white to-blue-50 min-h-[80vh]">
+      <div className="bg-gradient-to-b from-white to-blue-50 h-[100%]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
           <div className="text-center space-y-8">
             {/* Main Title */}
@@ -46,10 +46,9 @@ const MainPage = () => {
             <div className="mt-10">
               <button
                 onClick={handleButtonClick}
-                className="group bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-6 rounded-full transition-all duration-200 transform hover:scale-105"
+                className="relative font-extrabold text-xl tracking-wide bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 active:from-blue-800 active:to-blue-700 text-white px-10 py-6 rounded-full shadow-lg hover:shadow-xl active:shadow-md transition-all duration-200 transform hover:-translate-y-1 active:translate-y-0 hover:scale-[1.02] active:scale-[0.98]"
               >
                 Create a Smart Recruit
-                {/* <ArrowRight className="ml-2 h-5 w-5 inline-block group-hover:translate-x-1 transition-transform" /> */}
               </button>
             </div>
 
