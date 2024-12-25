@@ -51,7 +51,7 @@ function HRRoundEntrance() {
             value={candidateEmail}
             onChange={(e) => setCandidateEmail(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Enter your email"
+            placeholder="Enter Candidate's Email"
             className={`w-full pl-12 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 
               ${
                 input && candidateEmail.includes("@")
