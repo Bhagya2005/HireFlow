@@ -64,6 +64,14 @@ Explore our comprehensive project architecture through our **[Excalidraw Flowcha
 
 Dive deep into our project with **[SmartRecruit Documentation PDF](https://www.clashofcodes.in/media/solutions/CodeBros-48_btOrpfN.pdf)**.
 
+## 🎥 Project Overview Video
+
+Watch the detailed project overview in our [**YouTube Video**](https://www.youtube.com/watch?v=YWyGYaexbNk).
+
+
+--- 
+
+
 ## 🛠 Getting Started
 
 ### Prerequisites
