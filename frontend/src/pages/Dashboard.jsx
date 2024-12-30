@@ -243,6 +243,7 @@ const EmailModal = ({ isOpen, onClose, candidateEmail }) => {
 
 // Main Recruitment Dashboard
 const RecruitmentDashboard = () => {
+  const navigate = useNavigate();
   const [candidates, setCandidates] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
@@ -275,15 +276,15 @@ const RecruitmentDashboard = () => {
             )
               ? "Passed"
               : response.data.aptitudeFailedCandidates.includes(candidate.email)
-              ? "Failed"
-              : "Pending",
+                ? "Failed"
+                : "Pending",
             techStatus: response.data.techPassesCandidates.includes(
               candidate.email
             )
               ? "Passed"
               : response.data.techFailedCandidates.includes(candidate.email)
-              ? "Failed"
-              : "Pending",
+                ? "Failed"
+                : "Pending",
             hrStatus: "Pending",
             isCheating: !!(candidate.cheatImage || candidate.cheatComment),
           })
@@ -401,11 +402,10 @@ const RecruitmentDashboard = () => {
                 {sortedCandidates.map((candidate) => (
                   <tr
                     key={candidate.email}
-                    className={`border-b transition-colors ${
-                      candidate.isCheating
-                        ? "bg-red-50 hover:bg-red-100"
-                        : "hover:bg-gray-50"
-                    }`}
+                    className={`border-b transition-colors ${candidate.isCheating
+                      ? "bg-red-50 hover:bg-red-100"
+                      : "hover:bg-gray-50"
+                      }`}
                   >
                     <td className="px-6 py-4 font-medium flex items-center">
                       {candidate.isCheating && (
@@ -452,20 +452,29 @@ const RecruitmentDashboard = () => {
                         )}
                       </span>
                     </td>
-                    <td
-                      className={`px-6 py-4 ${getStatusColor(
-                        candidate.hrStatus
-                      )}`}
-                    >
-                      <span className="inline-flex items-center">
-                        {candidate.hrStatus}
-                        {candidate.hrStatus === "Passed" && (
-                          <span className="ml-2 w-2 h-2 bg-green-500 rounded-full"></span>
-                        )}
-                        {candidate.hrStatus === "Failed" && (
-                          <span className="ml-2 w-2 h-2 bg-red-500 rounded-full"></span>
-                        )}
-                      </span>
+                    <td className="px-6 py-4">
+                      {candidate.hrStatus === "Pending" ? (
+                        <button
+                          onClick={() => {
+                            localStorage.setItem("interviewRecruiterEmail", recruiterInfo.email)
+                            localStorage.setItem("interviewCandidateEmail", candidate.email)
+                            navigate(`/hrRoundEntrance`)
+                          }}
+                          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                        >
+                          Take Interview
+                        </button>
+                      ) : (
+                        <span className={`inline-flex items-center ${getStatusColor(candidate.hrStatus)}`}>
+                          {candidate.hrStatus}
+                          {candidate.hrStatus === "Passed" && (
+                            <span className="ml-2 w-2 h-2 bg-green-500 rounded-full"></span>
+                          )}
+                          {candidate.hrStatus === "Failed" && (
+                            <span className="ml-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                          )}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-center items-center space-x-2">
@@ -474,11 +483,10 @@ const RecruitmentDashboard = () => {
                             setSelectedCandidate(candidate);
                             setEmailModalOpen(true);
                           }}
-                          className={`p-2 rounded-full hover:bg-gray-100 ${
-                            candidate.isCheating
-                              ? "text-red-500 hover:text-red-700"
-                              : "text-blue-500 hover:text-blue-700"
-                          }`}
+                          className={`p-2 rounded-full hover:bg-gray-100 ${candidate.isCheating
+                            ? "text-red-500 hover:text-red-700"
+                            : "text-blue-500 hover:text-blue-700"
+                            }`}
                         >
                           <Mail size={20} />
                         </button>
