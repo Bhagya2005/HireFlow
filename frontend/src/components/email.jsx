@@ -1,9 +1,9 @@
 import emailjs from "@emailjs/browser";
 
 const sendEmail = async (templateParams) => {
-  const serviceID = "service_gza6g4w"; 
-  const templateID = "template_8yqr7ev"; 
-  const publicKey = "QFoSKdA7canodCThZ"; 
+  const serviceID = "service_k24gx2a"; 
+  const templateID = "template_beb6b3i"; 
+  const publicKey = "9BvLyWOUXCWd5o4lw"; 
 
   try {
     return await emailjs.send(serviceID, templateID, templateParams, publicKey);
