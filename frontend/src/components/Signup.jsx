@@ -50,7 +50,7 @@ const Signup = () => {
       <div className="w-full max-w-md mx-4 overflow-hidden rounded-lg shadow-2xl bg-white/95 backdrop-blur-sm">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-6 text-center">
-          <h1 className="text-2xl font-bold mb-2">SmartRecruit</h1>
+          <h1 className="text-2xl font-bold mb-2">HireFlow</h1>
           <p className="text-white/90 text-sm">
             Create your account to get started
           </p>

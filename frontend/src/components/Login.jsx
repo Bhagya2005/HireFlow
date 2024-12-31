@@ -41,7 +41,7 @@ const Login = () => {
       <div className="w-full max-w-md mx-4 overflow-hidden rounded-lg shadow-2xl bg-white/95 backdrop-blur-sm">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-6 text-center">
-          <h1 className="text-2xl font-bold mb-2">SmartRecruit</h1>
+          <h1 className="text-2xl font-bold mb-2">HireFlow</h1>
           <p className="text-white/90 text-sm">
             Welcome to the automated interview system
           </p>
@@ -104,7 +104,7 @@ const Login = () => {
             {/* Footer Text */}
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                New to SmartRecruit?
+                New to HireFlow?
                 <Link to="/signup">
                   <button className="ml-1 text-blue-600 hover:text-blue-800 font-medium focus:outline-none">
                     Sign Up

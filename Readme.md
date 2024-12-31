@@ -1,8 +1,8 @@
-# 🤖 SmartRecruit: Revolutionizing Recruitment
+# HireFlow – Representing a seamless recruitment process.
 
 ## 🚀 Project Overview
 
-**SmartRecruit** is an innovative open-source project designed to transform the recruitment process through cutting-edge automation and intelligent technologies.
+**HireFlow** is an innovative open-source project designed to transform the recruitment process through cutting-edge automation and intelligent technologies.
 
 ## 🛠 Problem Statement
 
@@ -15,7 +15,7 @@ The current recruitment landscape suffers from critical challenges:
 
 ## 🌟 Comprehensive Solution: Key Features
 
-SmartRecruit introduces a multi-dimensional recruitment workflow with three comprehensive rounds:
+HireFlow introduces a multi-dimensional recruitment workflow with three comprehensive rounds:
 
 1. **Aptitude Auto-Validation Round**
 
@@ -54,23 +54,6 @@ SmartRecruit introduces a multi-dimensional recruitment workflow with three comp
    - Transparent candidate journey tracking
    - Personalized communication workflows
 
-## 📊 Project Architecture
-
-### Workflow Visualization
-
-Explore our comprehensive project architecture through our **[Excalidraw Flowchart](https://excalidraw.com/#room=1633dcdffa2468e9eb2f,7stmYtK6Sc87v3dltyQsrQ)**.
-
-## 📚 Detailed Documentation
-
-Dive deep into our project with **[SmartRecruit Documentation PDF](https://www.clashofcodes.in/media/solutions/CodeBros-48_btOrpfN.pdf)**.
-
-## 🎥 Project Overview Video
-
-Watch the detailed project overview in our [**YouTube Video**](https://www.youtube.com/watch?v=YWyGYaexbNk).
-
-
---- 
-
 
 ## 🛠 Getting Started
 
@@ -89,7 +72,7 @@ Ensure the following technologies are installed:
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/Ganesh-Mk/SmartRecruit.git
+   git clone 
    ```
 
 2. **Setup Frontend**
@@ -111,11 +94,8 @@ Ensure the following technologies are installed:
    nodemon
    ```
 
-## 🌐 Environment Configuration
 
-**Need Environment Variables?**
 
-- **Contact**: [smartrecruitt@gmail.com](mailto:smartrecruitt@gmail.com)
 
 ## 💻 Technology Stack
 
@@ -133,66 +113,4 @@ Ensure the following technologies are installed:
 - **Database**:
   - MongoDB
 
-## 🤝 Contribution Guidelines
 
-We warmly welcome community contributions!
-
-1. **Fork the Repository**
-2. **Create Feature Branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-3. **Commit Changes**
-   ```bash
-   git commit -m "Add your feature description"
-   ```
-4. **Push to Branch**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-5. **Submit Pull Request**
-
----
-
-## 📸 **UI/UX Showcase**
-
-<div style="display: flex; justify-content: center; align-items: center;flex-direction: column; gap: 1rem;">
-
-<img 
-    src="https://res.cloudinary.com/ddzrgp0ut/image/upload/v1733924194/smartRecruitImages/rivy7fkrnokj6vnz8ylb.png" 
-    style="width: 100%; max-height: 20rem; object-fit: contain;" 
-  />
-<img 
-    src="https://res.cloudinary.com/ddzrgp0ut/image/upload/v1733924194/smartRecruitImages/tuqsansbyc0qhuqldsps.png" 
-    style="width: 100%; max-height: 20rem; object-fit: contain;" 
-  />
-<img 
-    src="https://res.cloudinary.com/ddzrgp0ut/image/upload/v1733924194/smartRecruitImages/xuim6zyj5rlu83f713n7.png" 
-    style="width: 100%; max-height: 20rem; object-fit: contain;" 
-  />
-<img 
-    src="https://res.cloudinary.com/ddzrgp0ut/image/upload/v1733924194/smartRecruitImages/woruovfzje9wj2agd4m2.png" 
-    style="width: 100%; max-height: 20rem; object-fit: contain;" 
-  />
-<img 
-    src="https://res.cloudinary.com/ddzrgp0ut/image/upload/v1733924194/smartRecruitImages/q33wjmvxsxlrtwtbkovc.png" 
-    style="width: 100%; max-height: 20rem; object-fit: contain;" 
-  />
-
-</div>
-
----
-
-## 📧 Connect With Us
-
-- **Project Support**: [smartrecruitt@gmail.com](mailto:smartrecruitt@gmail.com)
-
-## 🌟 Our Vision
-
-Transform recruitment into a seamless, intelligent, and efficient process with **SmartRecruit**.
-
-Join us in revolutionizing how talent meets opportunity! 🚀🌈
-
----
-
-**Open Source | Innovative | Smart Recruitment**
